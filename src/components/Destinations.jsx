@@ -40,19 +40,19 @@ export const Destinations = () => {
     const destinations = [
         {
             name: "Cartagena",
-            image: "https://images.unsplash.com/photo-1583997052303-b07261a5c05c?auto=format&fit=crop&q=80&w=1974",
+            image: "https://images.unsplash.com/photo-1629833728636-6132473426a8?q=80&w=2070&auto=format&fit=crop",
             boats: "120+",
             delay: 0.1
         },
         {
             name: "Santa Marta",
-            image: "https://images.unsplash.com/photo-1596436889106-96a6d6835a29?auto=format&fit=crop&q=80&w=1974",
+            image: "https://images.unsplash.com/photo-1628608684828-56e6d453982f?q=80&w=2070&auto=format&fit=crop",
             boats: "45+",
             delay: 0.2
         },
         {
             name: "San Andrés",
-            image: "https://images.unsplash.com/photo-1544085311-11a028465b03?auto=format&fit=crop&q=80&w=1932",
+            image: "https://images.unsplash.com/photo-1620614050212-9c1851e22033?q=80&w=2070&auto=format&fit=crop",
             boats: "80+",
             delay: 0.3
         }
