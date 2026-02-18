@@ -63,12 +63,15 @@ export const ProviderForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
         const validationErrors = validate();
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             return;
         }
+
         setLoading(true);
+
         try {
             const response = await fetch('/api/providers', {
                 method: 'POST',
@@ -86,14 +89,20 @@ export const ProviderForm = () => {
                     descripcion: formData.descripcion,
                 }),
             });
+
             const data = await response.json();
+
             if (!response.ok) {
+                console.error('❌ [FORM] Error en la respuesta:', data.message);
                 setErrors({ submit: data.message || 'Error al enviar el formulario.' });
                 return;
             }
+
+            console.log('✅ [FORM] Registro completado con éxito!');
             setSubmitted(true);
         } catch (err) {
-            setErrors({ submit: 'Error de conexión. Intenta de nuevo.' });
+            console.error('🚨 [FORM] ERROR FATAL EN FETCH:', err);
+            setErrors({ submit: 'Error de conexión. Verifica que el servidor esté corriendo.' });
         } finally {
             setLoading(false);
         }
@@ -263,17 +272,41 @@ export const ProviderForm = () => {
 
                             {/* Terms */}
                             <div className="pt-6">
-                                <label className="flex items-start gap-3 cursor-pointer group">
-                                    <div className="relative mt-1">
-                                        <input type="checkbox" name="aceptaTerminos" checked={formData.aceptaTerminos} onChange={handleChange} className="sr-only" />
-                                        <div className={`w-5 h-5 border-2 rounded-lg transition-all ${formData.aceptaTerminos ? 'bg-orange-DEFAULT border-orange-DEFAULT' : 'border-navy-dark/20 bg-white group-hover:border-orange-DEFAULT/40'}`} />
-                                        {formData.aceptaTerminos && <CheckCircle className="absolute inset-0 text-white p-0.5" />}
+                                <label
+                                    className="flex items-start gap-4 cursor-pointer group select-none"
+                                >
+                                    <div className="relative mt-0.5 shrink-0">
+                                        <input
+                                            type="checkbox"
+                                            name="aceptaTerminos"
+                                            checked={formData.aceptaTerminos}
+                                            onChange={handleChange}
+                                            className="absolute opacity-0 w-6 h-6 cursor-pointer -top-0.5 -left-0.5 z-10"
+                                        />
+                                        <div className={`w-6 h-6 border-2 rounded-lg transition-all duration-300 flex items-center justify-center ${formData.aceptaTerminos ? 'bg-orange-DEFAULT border-orange-DEFAULT shadow-premium-orange' : 'border-navy-dark/10 bg-white group-hover:border-orange-DEFAULT/30'}`}>
+                                            {formData.aceptaTerminos && (
+                                                <motion.div
+                                                    initial={{ scale: 0, rotate: -20 }}
+                                                    animate={{ scale: 1, rotate: 0 }}
+                                                >
+                                                    <CheckCircle className="text-white" size={14} />
+                                                </motion.div>
+                                            )}
+                                        </div>
                                     </div>
-                                    <span className="text-navy-dark/40 text-[10px] uppercase tracking-widest font-black leading-tight">
+                                    <span className="text-navy-dark/40 text-[10px] uppercase tracking-widest font-black leading-relaxed pt-0.5">
                                         Confirmo que los activos cumplen con los estándares de seguridad y acepto los términos de socio BOATY.
                                     </span>
                                 </label>
-                                {errors.aceptaTerminos && <p className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.aceptaTerminos}</p>}
+                                {errors.aceptaTerminos && (
+                                    <motion.p
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        className="text-red-500 text-[10px] font-bold mt-3 uppercase tracking-wide ml-10"
+                                    >
+                                        {errors.aceptaTerminos}
+                                    </motion.p>
+                                )}
                             </div>
 
                             {/* Errors */}
