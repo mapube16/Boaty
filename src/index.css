@@ -1,26 +1,59 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-primary text-slate font-sans antialiased;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply text-white font-bold;
-  }
+    * {
+        box-sizing: border-box;
+    }
+
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: #ffffff;
+        color: #081b33;
+        -webkit-font-smoothing: antialiased;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    .font-heading {
+        font-family: 'Outfit', sans-serif;
+    }
 }
 
 @layer utilities {
-  .glass {
-    @apply bg-secondary/80 backdrop-blur-md border border-white/10;
-  }
-  .glass-hover {
-    @apply hover:bg-secondary/90 transition-all duration-300;
-  }
-  .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-accent;
-  }
+    .text-gradient {
+        background: linear-gradient(135deg, #f26a31, #ff8c5a);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .glass-premium {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .glass-navy {
+        background: rgba(8, 27, 51, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .premium-underline {
+        height: 3px;
+        background: linear-gradient(90deg, #f26a31 0%, #ff8c5a 100%);
+        border-radius: 99px;
+    }
 }

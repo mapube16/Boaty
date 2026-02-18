@@ -7,18 +7,34 @@ export default {
     theme: {
         extend: {
             colors: {
-                primary: "#0A192F", // Deep Navy
-                secondary: "#112240", // Navy
-                accent: "#64FFDA", // Cyan/Turquoise
-                "light-slate": "#a8b2d1",
-                slate: "#8892b0",
-                white: "#e6f1ff",
+                navy: {
+                    dark: "#081b33", // Even deeper navy
+                    DEFAULT: "#1b3c6c",
+                    light: "#2a528a",
+                },
+                orange: {
+                    light: "#ff8c5a",
+                    DEFAULT: "#f26a31",
+                    dark: "#d14d1a",
+                },
+                cream: {
+                    light: "#f7f5f2",
+                    DEFAULT: "#eeeae6",
+                    dark: "#d9d2cb",
+                },
+                gold: "#c5a059", // For subtle premium accents
             },
             fontFamily: {
                 sans: ["Inter", "sans-serif"],
+                heading: ["Outfit", "sans-serif"],
             },
-            backgroundImage: {
-                'hero-pattern': "url('/hero-bg.jpg')",
+            boxShadow: {
+                'premium': '0 20px 50px rgba(8, 27, 51, 0.15)',
+                'premium-orange': '0 10px 30px rgba(242, 106, 49, 0.3)',
+            },
+            letterSpacing: {
+                tightest: '-0.05em',
+                widest: '0.25em',
             },
         },
     },

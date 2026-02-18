@@ -1,21 +1,19 @@
 import React from 'react';
 import { Navbar } from './components/Navbar';
 import { Hero } from './components/Hero';
-import { ProblemSolution } from './components/ProblemSolution';
-import { Destinations } from './components/Destinations';
+import { Benefits } from './components/Benefits';
 import { HowItWorks } from './components/HowItWorks';
-import { ForOwners } from './components/ForOwners';
+import { ProviderForm } from './components/ProviderForm';
 import { Footer } from './components/Footer';
 
 function App() {
     return (
-        <div className="min-h-screen bg-primary text-slate selection:bg-accent selection:text-primary">
+        <div className="min-h-screen bg-white text-navy-dark">
             <Navbar />
             <Hero />
-            <ProblemSolution />
-            <Destinations />
+            <Benefits />
             <HowItWorks />
-            <ForOwners />
+            <ProviderForm />
             <Footer />
         </div>
     );

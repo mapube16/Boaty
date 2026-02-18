@@ -1,91 +1,115 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Search, MapPin, Calendar, Users } from 'lucide-react';
-import { Button } from './Button';
+import { motion, useScroll, useTransform } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 
 export const Hero = () => {
-    return (
-        <section className="relative h-screen flex items-center justify-center overflow-hidden">
-            {/* Background Image Placeholder - In a real app, uses a high-quality video or image */}
-            <div className="absolute inset-0 z-0">
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/60 via-primary/40 to-primary/90 z-10" />
-                <img
-                    src="https://images.unsplash.com/photo-1569263979104-865ab7cd8d13?auto=format&fit=crop&q=80&w=2070"
-                    alt="Luxury Boat"
-                    className="w-full h-full object-cover"
-                />
-            </div>
+    const { scrollY } = useScroll();
+    const y1 = useTransform(scrollY, [0, 500], [0, 200]);
 
-            <div className="container mx-auto px-6 z-20 relative">
+    return (
+        <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-navy-dark px-6">
+            {/* Background Layer with Parallax */}
+            <motion.div style={{ y: y1 }} className="absolute inset-0 z-0">
+                <div className="absolute inset-0 bg-gradient-to-b from-navy-dark/40 via-navy-dark/20 to-navy-dark/95 z-10" />
+                <img
+                    src="https://images.unsplash.com/photo-1567623049182-3561a0625458?auto=format&fit=crop&q=80&w=2070"
+                    alt="Luxury Yacht"
+                    className="w-full h-full object-cover scale-110"
+                />
+            </motion.div>
+
+            {/* Content Container */}
+            <div className="container mx-auto max-w-6xl z-20 relative pt-20">
                 <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="text-center max-w-4xl mx-auto"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 1.5 }}
+                    className="text-center"
                 >
-                    <motion.h1
-                        className="text-5xl md:text-7xl font-bold mb-6 tracking-tight leading-tight"
+                    {/* Premium Badge */}
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, duration: 0.8 }}
+                        className="inline-block px-5 py-2 glass-premium rounded-full mb-8 border border-white/10"
+                    >
+                        <span className="text-white/60 text-[10px] uppercase tracking-[0.3em] font-bold">
+                            Elevando la navegación <span className="text-orange-DEFAULT mx-2">•</span> On Demand
+                        </span>
+                    </motion.div>
+
+                    {/* Dramatic Typography */}
+                    <div className="overflow-hidden mb-6">
+                        <motion.h1
+                            className="text-6xl md:text-9xl font-heading font-black text-white leading-[0.9] tracking-tightest"
+                            initial={{ y: "100%" }}
+                            animate={{ y: 0 }}
+                            transition={{ delay: 0.3, duration: 1, ease: [0.16, 1, 0.3, 1] }}
+                        >
+                            TU BOATY, <br />
+                            <span className="text-gradient">SIN LÍMITES.</span>
+                        </motion.h1>
+                    </div>
+
+
+
+                    {/* Refined Subheadline */}
+                    <motion.p
+                        className="text-lg md:text-2xl text-white/50 mb-12 max-w-2xl mx-auto leading-relaxed font-light font-sans"
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
+                        transition={{ delay: 1, duration: 0.8 }}
                     >
-                        Experience the Sea, <br />
-                        <span className="text-gradient">On Your Terms.</span>
-                    </motion.h1>
-
-                    <motion.p
-                        className="text-lg md:text-xl text-light-slate mb-10 max-w-2xl mx-auto"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ delay: 0.4 }}
-                    >
-                        The premier on-demand marketplace for luxury boat rentals.
-                        Fast, reliable, and exclusive experiences for international travelers.
+                        Únete al marketplace on-demand que conecta tu servicio náutico con el turismo más exclusivo del mundo.
                     </motion.p>
 
-                    {/* Search Box - Glassmorphism */}
+                    {/* Premium CTAs */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.6 }}
-                        className="glass p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between max-w-3xl mx-auto shadow-2xl border border-white/10"
+                        transition={{ delay: 1.3, duration: 0.8 }}
+                        className="flex flex-col sm:flex-row gap-6 justify-center items-center"
                     >
-                        <div className="flex items-center gap-3 w-full md:w-auto px-4 py-2 bg-primary/30 rounded-lg border border-white/5">
-                            <MapPin className="text-accent" />
-                            <input
-                                type="text"
-                                placeholder="Where to?"
-                                className="bg-transparent border-none text-white focus:ring-0 placeholder-slate/50 w-full"
-                            />
-                        </div>
+                        <a
+                            href="#registro"
+                            className="group bg-orange-DEFAULT text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-orange-dark transition-all shadow-premium-orange hover:shadow-orange-DEFAULT/40 flex items-center gap-3 active:scale-95"
+                        >
+                            COMENZAR AHORA
+                            <ArrowRight className="transition-transform group-hover:translate-x-1" size={20} />
+                        </a>
+                        <a
+                            href="#como-funciona"
+                            className="text-white/60 hover:text-white px-8 py-5 font-bold tracking-widest text-xs uppercase transition-all flex items-center gap-2 border-b border-white/10 hover:border-white"
+                        >
+                            DESCUBRE EL MODELO
+                        </a>
+                    </motion.div>
 
-                        <div className="flex items-center gap-3 w-full md:w-auto px-4 py-2 bg-primary/30 rounded-lg border border-white/5">
-                            <Calendar className="text-accent" />
-                            <input
-                                type="text"
-                                placeholder="Date"
-                                className="bg-transparent border-none text-white focus:ring-0 placeholder-slate/50 w-full"
-                            />
-                        </div>
-
-                        <div className="flex items-center gap-3 w-full md:w-auto px-4 py-2 bg-primary/30 rounded-lg border border-white/5">
-                            <Users className="text-accent" />
-                            <select className="bg-transparent border-none text-white focus:ring-0 w-full [&>option]:bg-primary">
-                                <option>2 Guests</option>
-                                <option>4 Guests</option>
-                                <option>6+ Guests</option>
-                            </select>
-                        </div>
-
-                        <Button className="w-full md:w-auto bg-accent text-primary font-bold shadow-lg shadow-accent/20">
-                            Search Boats
-                        </Button>
+                    {/* Scroll Stats - Glassmorphism */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 1.8, duration: 1 }}
+                        className="mt-24 grid grid-cols-2 md:grid-cols-3 gap-12 max-w-4xl mx-auto glass-premium p-10 rounded-[32px] border-white/5"
+                    >
+                        {[
+                            { value: '15%', label: 'Take Rate' },
+                            { value: '30m', label: 'Match Time' },
+                            { value: '80%', label: 'Efficiency' },
+                        ].map((stat, i) => (
+                            <div key={i} className="text-center space-y-2">
+                                <div className="text-4xl font-heading font-black text-white">{stat.value}</div>
+                                <div className="text-[10px] uppercase tracking-widest text-white/40 font-bold">{stat.label}</div>
+                                <div className="w-8 h-[1px] bg-orange-DEFAULT mx-auto opacity-30" />
+                            </div>
+                        ))}
                     </motion.div>
                 </motion.div>
             </div>
 
-            {/* Decorative Elements */}
-            <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-primary to-transparent z-10" />
+            {/* Decorative Blurs */}
+            <div className="absolute top-1/4 -left-20 w-96 h-96 bg-orange-DEFAULT/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-navy-light/20 rounded-full blur-[120px] pointer-events-none" />
         </section>
     );
 };
