@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, LogIn, User } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const { user } = useAuth();
 
     useEffect(() => {
         const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -15,8 +18,10 @@ export const Navbar = () => {
     const navLinks = [
         { name: 'Beneficios', href: '#beneficios' },
         { name: 'Cómo funciona', href: '#como-funciona' },
-        { name: 'Registro', href: '#registro' },
+        ...(!user ? [{ name: 'Registro', href: '#registro' }] : []),
     ];
+
+    const dashboardPath = user?.role === 'STAFF' ? '/admin' : user?.role === 'OPERATOR' ? '/operador' : '/dashboard';
 
     return (
         <motion.nav
@@ -30,7 +35,7 @@ export const Navbar = () => {
                 }`}>
                 <div className="flex items-center justify-between">
                     {/* Premium Logo */}
-                    <a href="#" className="group flex flex-col items-start">
+                    <a href="/" className="group flex flex-col items-start">
                         <span className="text-white font-heading font-extrabold text-2xl tracking-widest leading-none transition-transform duration-300 group-hover:scale-105">
                             BO<span className="relative">
                                 <span className="text-white">A</span>
@@ -56,12 +61,31 @@ export const Navbar = () => {
                                 <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-orange-DEFAULT transition-all duration-300 group-hover:w-full" />
                             </a>
                         ))}
-                        <a
-                            href="#registro"
-                            className="bg-orange-DEFAULT text-white px-7 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-orange-dark transition-all shadow-premium-orange hover:-translate-y-0.5"
-                        >
-                            Unirme
-                        </a>
+                        {user ? (
+                            <Link
+                                to={dashboardPath}
+                                className="flex items-center gap-2 bg-white/10 backdrop-blur-sm text-white px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-white/20 transition-all border border-white/10"
+                            >
+                                <User size={14} />
+                                Mi panel
+                            </Link>
+                        ) : (
+                            <Link
+                                to="/login"
+                                className="flex items-center gap-2 text-white/70 hover:text-white transition-all text-xs font-semibold uppercase tracking-widest"
+                            >
+                                <LogIn size={14} />
+                                Entrar
+                            </Link>
+                        )}
+                        {!user && (
+                            <a
+                                href="#registro"
+                                className="bg-orange-DEFAULT text-white px-7 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-orange-dark transition-all shadow-premium-orange hover:-translate-y-0.5"
+                            >
+                                Unirme
+                            </a>
+                        )}
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -91,13 +115,34 @@ export const Navbar = () => {
                             {link.name}
                         </a>
                     ))}
-                    <a
-                        href="#registro"
-                        className="bg-orange-DEFAULT text-white px-6 py-4 rounded-xl font-bold text-center mt-2"
-                        onClick={() => setMenuOpen(false)}
-                    >
-                        Registrarme como proveedor
-                    </a>
+                    {user ? (
+                        <Link
+                            to={dashboardPath}
+                            className="flex items-center gap-2 text-white/80 hover:text-white text-lg font-heading font-semibold tracking-wide"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            <User size={18} />
+                            Mi panel
+                        </Link>
+                    ) : (
+                        <Link
+                            to="/login"
+                            className="flex items-center gap-2 text-white/80 hover:text-white text-lg font-heading font-semibold tracking-wide"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            <LogIn size={18} />
+                            Iniciar sesión
+                        </Link>
+                    )}
+                    {!user && (
+                        <a
+                            href="#registro"
+                            className="bg-orange-DEFAULT text-white px-6 py-4 rounded-xl font-bold text-center mt-2"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            Registrarme como proveedor
+                        </a>
+                    )}
                 </motion.div>
             )}
         </motion.nav>

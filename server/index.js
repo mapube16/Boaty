@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import providersRouter from './routes/providers.js';
 import authRouter from './routes/auth.js';
 import adminRouter from './routes/admin.js';
+import operatorRouter from './routes/operator.js';
 
 dotenv.config();
 
@@ -27,6 +28,7 @@ app.use(cookieParser());
 app.use('/api/providers', providersRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
+app.use('/api/operator', operatorRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

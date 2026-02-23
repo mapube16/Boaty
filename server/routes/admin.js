@@ -3,6 +3,8 @@ import bcrypt from 'bcryptjs';
 import { Provider } from '../models/Provider.js';
 import { User } from '../models/User.js';
 import { InviteToken } from '../models/InviteToken.js';
+import { Boat } from '../models/Boat.js';
+import { Booking } from '../models/Booking.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { generateToken, hashToken } from '../utils/crypto.js';
 import { sendInviteEmail } from '../utils/email.js';
@@ -57,6 +59,18 @@ router.post('/bootstrap-user', async (req, res) => {
 router.post('/bootstrap-create-user', async (req, res) => {
     try {
         const secret = req.headers['x-bootstrap-secret'] || req.body?.bootstrapSecret || req.query?.bootstrapSecret;
+
+        console.log('--- DEBUG bootstrap-create-user ---');
+        console.log('Header x-bootstrap-secret:', JSON.stringify(req.headers['x-bootstrap-secret']));
+        console.log('Body bootstrapSecret:', JSON.stringify(req.body?.bootstrapSecret));
+        console.log('Query bootstrapSecret:', JSON.stringify(req.query?.bootstrapSecret));
+        console.log('Secret recibido:', JSON.stringify(secret));
+        console.log('BOOTSTRAP_SECRET env:', JSON.stringify(process.env.BOOTSTRAP_SECRET));
+        console.log('Son iguales?:', secret === process.env.BOOTSTRAP_SECRET);
+        console.log('Body completo:', JSON.stringify(req.body));
+        console.log('Headers:', JSON.stringify(req.headers, null, 2));
+        console.log('--- FIN DEBUG ---');
+
         if (!process.env.BOOTSTRAP_SECRET || secret !== process.env.BOOTSTRAP_SECRET) {
             return res.status(403).json({ success: false, message: 'No autorizado.' });
         }
@@ -202,6 +216,182 @@ router.post('/providers/:id/approve', requireAuth, requireRole('STAFF'), async (
     } catch (error) {
         console.error('[ADMIN] Error en approve:', error.message);
         return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// ─── Seed endpoint: carga datos de prueba para un operador (solo POC) ───
+router.post('/seed-operator-data', async (req, res) => {
+    try {
+        const secret = req.headers['x-bootstrap-secret'] || req.body?.bootstrapSecret || req.query?.bootstrapSecret;
+        if (!process.env.BOOTSTRAP_SECRET || secret !== process.env.BOOTSTRAP_SECRET) {
+            return res.status(403).json({ success: false, message: 'No autorizado.' });
+        }
+
+        const { operatorEmail } = req.body;
+        if (!operatorEmail) {
+            return res.status(400).json({ success: false, message: 'operatorEmail es requerido.' });
+        }
+
+        const operator = await User.findOne({ email: operatorEmail.toLowerCase().trim(), role: 'OPERATOR' });
+        if (!operator) {
+            return res.status(404).json({ success: false, message: 'Operador no encontrado.' });
+        }
+
+        // Buscar o crear un provider de prueba
+        let provider = await Provider.findOne({ email: 'proveedor-demo@boaty.com' });
+        if (!provider) {
+            provider = await Provider.create({
+                nombre: 'Carlos',
+                apellido: 'Martínez',
+                empresa: 'Marina del Sol S.A.',
+                email: 'proveedor-demo@boaty.com',
+                telefono: '+57 300 123 4567',
+                destino: 'Cartagena',
+                tipoEmbarcacion: 'Yate',
+                cantidadEmbarcaciones: 3,
+                capacidadPersonas: 12,
+                descripcion: 'Empresa de alquiler de yates premium en Cartagena.',
+                estado: 'activo',
+            });
+        }
+
+        // Crear embarcaciones de prueba
+        const boatsData = [
+            { nombre: 'Sea Breeze', tipo: 'Yate', capacidad: 12, ubicacion: 'Cartagena - Muelle Turístico', estado: 'activa', matricula: 'CTG-2024-001', descripcion: 'Yate de lujo con 3 camarotes, cocina equipada y terraza superior.' },
+            { nombre: 'Coral Runner', tipo: 'Lancha rápida', capacidad: 8, ubicacion: 'Cartagena - Bocagrande', estado: 'activa', matricula: 'CTG-2024-015', descripcion: 'Lancha rápida ideal para traslados a las islas del Rosario.' },
+            { nombre: 'Blue Horizon', tipo: 'Catamarán', capacidad: 20, ubicacion: 'Cartagena - Castillogrande', estado: 'mantenimiento', matricula: 'CTG-2024-030', descripcion: 'Catamarán espacioso para eventos y excursiones grupales.' },
+        ];
+
+        const boats = [];
+        for (const bd of boatsData) {
+            const existingBoat = await Boat.findOne({ matricula: bd.matricula });
+            if (existingBoat) {
+                existingBoat.operatorId = operator._id;
+                await existingBoat.save();
+                boats.push(existingBoat);
+            } else {
+                const boat = await Boat.create({ ...bd, providerId: provider._id, operatorId: operator._id });
+                boats.push(boat);
+            }
+        }
+
+        // Crear reservas de prueba
+        const today = new Date();
+        const bookingsData = [
+            {
+                codigo: 'BOK-001',
+                boatId: boats[0]._id,
+                clienteNombre: 'María García López',
+                clienteEmail: 'maria.garcia@email.com',
+                clienteTelefono: '+57 311 234 5678',
+                pasajeros: 6,
+                fecha: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+                horaInicio: '09:00',
+                horaFin: '13:00',
+                duracionHoras: 4,
+                destino: 'Islas del Rosario',
+                tipoViaje: 'excursion',
+                notas: 'Cliente VIP, llevar snacks y bebidas premium. Celebración de cumpleaños.',
+                precioTotal: 1800000,
+                estado: 'confirmada',
+            },
+            {
+                codigo: 'BOK-002',
+                boatId: boats[1]._id,
+                clienteNombre: 'Andrés Rodríguez',
+                clienteEmail: 'andres.r@email.com',
+                clienteTelefono: '+57 315 876 5432',
+                pasajeros: 4,
+                fecha: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+                horaInicio: '14:00',
+                horaFin: '18:00',
+                duracionHoras: 4,
+                destino: 'Isla Barú',
+                tipoViaje: 'paseo',
+                notas: 'Incluye parada para snorkeling.',
+                precioTotal: 950000,
+                estado: 'pendiente',
+            },
+            {
+                codigo: 'BOK-003',
+                boatId: boats[0]._id,
+                clienteNombre: 'Familia Hernández',
+                clienteEmail: 'hernandez.fam@email.com',
+                clienteTelefono: '+57 320 111 2233',
+                pasajeros: 10,
+                fecha: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1),
+                horaInicio: '08:00',
+                horaFin: '16:00',
+                duracionHoras: 8,
+                destino: 'Islas del Rosario - Isla Grande',
+                tipoViaje: 'excursion',
+                notas: 'Grupo familiar con 3 niños. Necesitan chalecos infantiles.',
+                precioTotal: 3200000,
+                estado: 'confirmada',
+            },
+            {
+                codigo: 'BOK-004',
+                boatId: boats[1]._id,
+                clienteNombre: 'Pedro Sánchez Mora',
+                clienteEmail: 'pedro.sm@email.com',
+                clienteTelefono: '+57 318 999 0011',
+                pasajeros: 3,
+                fecha: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2),
+                horaInicio: '06:00',
+                horaFin: '12:00',
+                duracionHoras: 6,
+                destino: 'Zona de pesca - Mar abierto',
+                tipoViaje: 'pesca',
+                notas: 'Cliente trae su propio equipo de pesca. Necesita hielo.',
+                precioTotal: 1200000,
+                estado: 'pendiente',
+            },
+            {
+                codigo: 'BOK-005',
+                boatId: boats[0]._id,
+                clienteNombre: 'Empresa TechCo',
+                clienteEmail: 'eventos@techco.com',
+                clienteTelefono: '+57 601 555 0000',
+                pasajeros: 12,
+                fecha: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 1),
+                horaInicio: '17:00',
+                horaFin: '21:00',
+                duracionHoras: 4,
+                destino: 'Bahía de Cartagena - Sunset tour',
+                tipoViaje: 'evento',
+                notas: 'Evento corporativo. Catering contratado aparte.',
+                precioTotal: 4500000,
+                estado: 'completada',
+            },
+        ];
+
+        const createdBookings = [];
+        for (const bd of bookingsData) {
+            const existing = await Booking.findOne({ codigo: bd.codigo });
+            if (existing) {
+                existing.operatorId = operator._id;
+                existing.providerId = provider._id;
+                await existing.save();
+                createdBookings.push(existing);
+            } else {
+                const booking = await Booking.create({
+                    ...bd,
+                    operatorId: operator._id,
+                    providerId: provider._id,
+                });
+                createdBookings.push(booking);
+            }
+        }
+
+        return res.status(201).json({
+            success: true,
+            message: `Seed completado: ${boats.length} embarcaciones, ${createdBookings.length} reservas creadas para ${operatorEmail}`,
+            boats: boats.map(b => ({ id: b._id, nombre: b.nombre })),
+            bookings: createdBookings.map(b => ({ id: b._id, codigo: b.codigo, cliente: b.clienteNombre })),
+        });
+    } catch (error) {
+        console.error('[ADMIN] Error en seed:', error.message);
+        return res.status(500).json({ success: false, message: `Error: ${error.message}` });
     }
 });
 

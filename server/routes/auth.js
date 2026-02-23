@@ -140,11 +140,22 @@ router.post('/refresh', async (req, res) => {
 
 router.get('/me', requireAuth, async (req, res) => {
     try {
-        const user = await User.findById(req.user.sub).select('email role status');
+        const user = await User.findById(req.user.sub).select('email role status providerId');
         if (!user) {
             return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
         }
-        return res.json({ success: true, user });
+
+        const result = { id: user._id, email: user.email, role: user.role, status: user.status };
+
+        // If user is a provider (ADMIN), include their provider data
+        if (user.providerId) {
+            const provider = await Provider.findById(user.providerId);
+            if (provider) {
+                result.provider = provider;
+            }
+        }
+
+        return res.json({ success: true, user: result });
     } catch (error) {
         return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
     }
