@@ -2,22 +2,31 @@ import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
 import providersRouter from './routes/providers.js';
+import authRouter from './routes/auth.js';
+import adminRouter from './routes/admin.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors({
     origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173'],
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    credentials: true,
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 app.use('/api/providers', providersRouter);
+app.use('/api/auth', authRouter);
+app.use('/api/admin', adminRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -40,10 +40,19 @@ const providerSchema = new mongoose.Schema({
         type: Number,
         required: [true, 'La cantidad de embarcaciones es requerida'],
         min: 1,
+        validate: {
+            validator: Number.isInteger,
+            message: 'La cantidad de embarcaciones debe ser un entero',
+        },
     },
     capacidadPersonas: {
         type: Number,
         default: null,
+        min: 1,
+        validate: {
+            validator: (value) => value === null || Number.isInteger(value),
+            message: 'La capacidad debe ser un entero',
+        },
     },
     descripcion: {
         type: String,

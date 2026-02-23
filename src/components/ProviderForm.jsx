@@ -46,7 +46,16 @@ export const ProviderForm = () => {
         if (!formData.telefono.trim()) newErrors.telefono = 'Teléfono requerido';
         if (!formData.destino) newErrors.destino = 'Selecciona un destino';
         if (!formData.tipoEmbarcacion) newErrors.tipoEmbarcacion = 'Selecciona un tipo';
-        if (!formData.cantidadEmbarcaciones) newErrors.cantidadEmbarcaciones = 'Requerido';
+        const cantidadValue = Number(formData.cantidadEmbarcaciones);
+        if (!formData.cantidadEmbarcaciones) {
+            newErrors.cantidadEmbarcaciones = 'Requerido';
+        } else if (!Number.isFinite(cantidadValue) || !Number.isInteger(cantidadValue) || cantidadValue < 1) {
+            newErrors.cantidadEmbarcaciones = 'Debe ser un entero mayor o igual a 1';
+        }
+        const capacidadValue = formData.capacidadPersonas ? Number(formData.capacidadPersonas) : null;
+        if (capacidadValue !== null && (!Number.isFinite(capacidadValue) || !Number.isInteger(capacidadValue) || capacidadValue < 1)) {
+            newErrors.capacidadPersonas = 'Debe ser un entero mayor o igual a 1';
+        }
         if (!formData.aceptaTerminos) newErrors.aceptaTerminos = 'Acepta los términos';
         return newErrors;
     };
@@ -90,11 +99,12 @@ export const ProviderForm = () => {
                 }),
             });
 
-            const data = await response.json();
+            const contentType = response.headers.get('content-type') || '';
+            const data = contentType.includes('application/json') ? await response.json() : null;
 
             if (!response.ok) {
-                console.error('❌ [FORM] Error en la respuesta:', data.message);
-                setErrors({ submit: data.message || 'Error al enviar el formulario.' });
+                console.error('❌ [FORM] Error en la respuesta:', data?.message || response.statusText);
+                setErrors({ submit: data?.message || 'Error al enviar el formulario.' });
                 return;
             }
 
@@ -261,11 +271,13 @@ export const ProviderForm = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
                                         <label className={labelClasses}>Cantidad</label>
-                                        <input type="number" name="cantidadEmbarcaciones" value={formData.cantidadEmbarcaciones} onChange={handleChange} placeholder="0" className={inputClasses('cantidadEmbarcaciones')} />
+                                        <input type="number" name="cantidadEmbarcaciones" value={formData.cantidadEmbarcaciones} onChange={handleChange} placeholder="0" min="1" step="1" className={inputClasses('cantidadEmbarcaciones')} />
+                                        {errors.cantidadEmbarcaciones && <p className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.cantidadEmbarcaciones}</p>}
                                     </div>
                                     <div>
                                         <label className={labelClasses}>Capacidad</label>
-                                        <input type="number" name="capacidadPersonas" value={formData.capacidadPersonas} onChange={handleChange} placeholder="Max Pax" className={inputClasses('capacidadPersonas')} />
+                                        <input type="number" name="capacidadPersonas" value={formData.capacidadPersonas} onChange={handleChange} placeholder="Max Pax" min="1" step="1" className={inputClasses('capacidadPersonas')} />
+                                        {errors.capacidadPersonas && <p className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.capacidadPersonas}</p>}
                                     </div>
                                 </div>
                             </div>

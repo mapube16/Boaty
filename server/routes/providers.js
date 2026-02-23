@@ -19,8 +19,16 @@ router.post('/', async (req, res) => {
             descripcion,
         } = req.body;
 
+        const normalizedEmail = typeof email === 'string' ? email.toLowerCase().trim() : '';
+        if (!normalizedEmail) {
+            return res.status(400).json({
+                success: false,
+                message: 'El email es requerido.',
+            });
+        }
+
         // Check for duplicate email
-        const existing = await Provider.findOne({ email: email?.toLowerCase().trim() });
+        const existing = await Provider.findOne({ email: normalizedEmail });
         if (existing) {
             return res.status(409).json({
                 success: false,
@@ -28,16 +36,32 @@ router.post('/', async (req, res) => {
             });
         }
 
+        const cantidadNumber = Number(cantidadEmbarcaciones);
+        if (!Number.isFinite(cantidadNumber) || !Number.isInteger(cantidadNumber) || cantidadNumber < 1) {
+            return res.status(400).json({
+                success: false,
+                message: 'La cantidad de embarcaciones debe ser un entero mayor o igual a 1.',
+            });
+        }
+
+        const capacidadNumber = capacidadPersonas ? Number(capacidadPersonas) : null;
+        if (capacidadNumber !== null && (!Number.isFinite(capacidadNumber) || !Number.isInteger(capacidadNumber) || capacidadNumber < 1)) {
+            return res.status(400).json({
+                success: false,
+                message: 'La capacidad debe ser un entero mayor o igual a 1.',
+            });
+        }
+
         const provider = new Provider({
             nombre,
             apellido,
             empresa,
-            email,
+            email: normalizedEmail,
             telefono,
             destino,
             tipoEmbarcacion,
-            cantidadEmbarcaciones: Number(cantidadEmbarcaciones),
-            capacidadPersonas: capacidadPersonas ? Number(capacidadPersonas) : null,
+            cantidadEmbarcaciones: cantidadNumber,
+            capacidadPersonas: capacidadNumber,
             descripcion,
         });
 

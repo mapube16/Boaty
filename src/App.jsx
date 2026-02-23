@@ -4,6 +4,7 @@ import { Hero } from './components/Hero';
 import { Benefits } from './components/Benefits';
 import { HowItWorks } from './components/HowItWorks';
 import { ProviderForm } from './components/ProviderForm';
+import { AdminPortal } from './components/AdminPortal';
 import { Footer } from './components/Footer';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
             <Benefits />
             <HowItWorks />
             <ProviderForm />
+            <AdminPortal />
             <Footer />
         </div>
     );
