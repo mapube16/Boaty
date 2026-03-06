@@ -13,7 +13,7 @@ export const Footer = () => {
                             <span className="text-white font-heading font-black text-3xl tracking-widest leading-none">
                                 BOATY
                             </span>
-                            <div className="h-[2px] w-12 bg-orange-DEFAULT mt-2" />
+                            <div className="h-[2px] w-12 bg-orange mt-2" />
                             <p className="text-white/30 text-[10px] uppercase tracking-[0.5em] mt-3 font-bold">RESERVAS ON DEMAND</p>
                         </div>
                         <p className="text-white/40 text-sm font-medium leading-relaxed max-w-xs">
@@ -21,7 +21,7 @@ export const Footer = () => {
                         </p>
                         <div className="flex items-center gap-4">
                             {[Instagram, Twitter, Linkedin].map((Icon, i) => (
-                                <a key={i} href="#" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/40 hover:bg-orange-DEFAULT hover:text-white transition-all duration-300">
+                                <a key={i} href="#" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-white/40 hover:bg-orange hover:text-white transition-all duration-300">
                                     <Icon size={18} />
                                 </a>
                             ))}
@@ -47,7 +47,7 @@ export const Footer = () => {
                             <li className="text-white/30 text-sm font-medium">Cartagena, CO</li>
                             <li className="text-white/30 text-sm font-medium">partners@boaty.com</li>
                             <li>
-                                <a href="#registro" className="text-orange-DEFAULT hover:text-orange-light text-sm font-bold tracking-widest uppercase">Unirse</a>
+                                <a href="#registro" className="text-orange hover:text-orange-light text-sm font-bold tracking-widest uppercase">Unirse</a>
                             </li>
                         </ul>
                     </div>

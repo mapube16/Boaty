@@ -7,12 +7,35 @@ import { useAuth } from '../context/AuthContext';
 export const Navbar = () => {
     const [scrolled, setScrolled] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
+    const [activeSection, setActiveSection] = useState('');
     const { user } = useAuth();
 
     useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 50);
+        const handleScroll = () => {
+            setScrolled(window.scrollY > 50);
+        };
         window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+
+        // Intersection Observer for active nav items
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    setActiveSection(`#${entry.target.id}`);
+                }
+            });
+        }, {
+            threshold: 0.5,
+            rootMargin: '-80px 0px 0px 0px'
+        });
+
+        // Observe elements
+        const sections = document.querySelectorAll('section[id]');
+        sections.forEach((section) => observer.observe(section));
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            sections.forEach((section) => observer.unobserve(section));
+        };
     }, []);
 
     const navLinks = [
@@ -45,22 +68,30 @@ export const Navbar = () => {
                             initial={{ width: 0 }}
                             animate={{ width: '100%' }}
                             transition={{ delay: 1, duration: 1 }}
-                            className="h-[2px] bg-gradient-to-r from-orange-DEFAULT to-orange-light mt-1.5"
+                            className="h-[2px] bg-gradient-to-r from-orange to-orange-light mt-1.5"
                         />
                     </a>
 
                     {/* Desktop Nav */}
                     <div className="hidden md:flex items-center gap-10">
-                        {navLinks.map((link) => (
-                            <a
-                                key={link.name}
-                                href={link.href}
-                                className="text-white/70 hover:text-white transition-all text-xs font-semibold uppercase tracking-widest relative group"
-                            >
-                                {link.name}
-                                <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-orange-DEFAULT transition-all duration-300 group-hover:w-full" />
-                            </a>
-                        ))}
+                        {navLinks.map((link) => {
+                            const isActive = activeSection === link.href;
+
+                            return (
+                                <a
+                                    key={link.name}
+                                    href={link.href}
+                                    className={`transition-all text-xs font-semibold uppercase tracking-widest relative group ${isActive ? 'text-white' : 'text-white/70 hover:text-white'
+                                        }`}
+                                >
+                                    {link.name}
+                                    <span
+                                        className={`absolute -bottom-1 left-0 h-[1px] bg-orange transition-all duration-300 group-hover:w-full ${isActive ? 'w-full' : 'w-0'
+                                            }`}
+                                    />
+                                </a>
+                            );
+                        })}
                         {user ? (
                             <Link
                                 to={dashboardPath}
@@ -81,7 +112,7 @@ export const Navbar = () => {
                         {!user && (
                             <a
                                 href="#registro"
-                                className="bg-orange-DEFAULT text-white px-7 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-orange-dark transition-all shadow-premium-orange hover:-translate-y-0.5"
+                                className="bg-orange text-white px-7 py-3 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-orange-dark transition-all shadow-premium-orange hover:-translate-y-0.5"
                             >
                                 Unirme
                             </a>
@@ -105,16 +136,22 @@ export const Navbar = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     className="md:hidden glass-navy rounded-3xl mt-4 p-8 flex flex-col gap-6 shadow-2xl border border-white/10"
                 >
-                    {navLinks.map((link) => (
-                        <a
-                            key={link.name}
-                            href={link.href}
-                            className="text-white/80 hover:text-white text-lg font-heading font-semibold tracking-wide"
-                            onClick={() => setMenuOpen(false)}
-                        >
-                            {link.name}
-                        </a>
-                    ))}
+                    {navLinks.map((link) => {
+                        const isActive = activeSection === link.href;
+
+                        return (
+                            <a
+                                key={link.name}
+                                href={link.href}
+                                className={`text-lg font-heading font-semibold tracking-wide flex items-center gap-3 ${isActive ? 'text-orange' : 'text-white/80 hover:text-white'
+                                    }`}
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                {isActive && <span className="w-1.5 h-1.5 rounded-full bg-orange" />}
+                                {link.name}
+                            </a>
+                        );
+                    })}
                     {user ? (
                         <Link
                             to={dashboardPath}
@@ -137,7 +174,7 @@ export const Navbar = () => {
                     {!user && (
                         <a
                             href="#registro"
-                            className="bg-orange-DEFAULT text-white px-6 py-4 rounded-xl font-bold text-center mt-2"
+                            className="bg-orange text-white px-6 py-4 rounded-xl font-bold text-center mt-2"
                             onClick={() => setMenuOpen(false)}
                         >
                             Registrarme como proveedor

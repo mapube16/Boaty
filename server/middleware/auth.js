@@ -14,7 +14,7 @@ export const requireAuth = async (req, res, next) => {
         if (!user || user.status !== 'active') {
             return res.status(401).json({ success: false, message: 'Sesion invalida.' });
         }
-        req.user = { sub: payload.sub, role: user.role, email: user.email };
+        req.user = { _id: user._id, sub: payload.sub, role: user.role, email: user.email };
         return next();
     } catch (error) {
         return res.status(401).json({ success: false, message: 'Sesion invalida.' });

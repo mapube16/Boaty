@@ -1,7 +1,9 @@
 import express from 'express';
 import { Boat } from '../models/Boat.js';
 import { Booking } from '../models/Booking.js';
+import { FinancialInfo } from '../models/FinancialInfo.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
+import { dispatchBookingStatusChanged } from '../utils/notifications.js';
 
 const router = express.Router();
 
@@ -114,6 +116,42 @@ router.patch('/bookings/:id/status', requireAuth, requireRole('OPERATOR'), async
 
         booking.estado = estado;
         await booking.save();
+
+        // Si el viaje fue completado o cancelado, registrar en FinancialInfo
+        if (estado === 'completada' || estado === 'cancelada') {
+            try {
+                await FinancialInfo.findOneAndUpdate(
+                    { bookingId: booking._id },
+                    {
+                        operatorId: booking.operatorId,
+                        bookingId: booking._id,
+                        clienteNombre: booking.clienteNombre,
+                        codigoReserva: booking.codigo,
+                        destino: booking.destino || '',
+                        tipoViaje: booking.tipoViaje || '',
+                        fecha: booking.fecha,
+                        pasajeros: booking.pasajeros,
+                        duracionHoras: booking.duracionHoras || null,
+                        montoCobrado: estado === 'completada' ? (booking.precioTotal || 0) : 0,
+                        estadoRegistro: estado,
+                    },
+                    { upsert: true, new: true }
+                );
+                console.log(`[OPERATOR] FinancialInfo registrado para booking ${booking.codigo}`);
+            } catch (fiError) {
+                console.error('[OPERATOR] Error registrando FinancialInfo:', fiError.message);
+                // No bloquear la respuesta principal
+            }
+        }
+
+        // Populate boat name for notifications
+        const bookingPopulated = await Booking.findById(booking._id)
+            .populate('boatId', 'nombre').lean();
+        const boatName = bookingPopulated?.boatId?.nombre || '';
+
+        // Dispatch full notifications (SSE + email + WhatsApp) to all parties
+        dispatchBookingStatusChanged(booking, boatName).catch(e =>
+            console.error('[OPERATOR] Error en notificaciones:', e.message));
 
         return res.json({ success: true, booking });
     } catch (error) {

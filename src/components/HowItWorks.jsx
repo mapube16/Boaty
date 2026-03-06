@@ -43,7 +43,7 @@ export const HowItWorks = () => {
                     transition={{ duration: 0.8 }}
                     className="text-center mb-24"
                 >
-                    <span className="text-orange-DEFAULT font-bold text-[10px] uppercase tracking-[0.5em] mb-6 block">
+                    <span className="text-orange font-bold text-[10px] uppercase tracking-[0.5em] mb-6 block">
                         EL MODELO OPERATIVO
                     </span>
                     <h2 className="text-5xl md:text-7xl font-heading font-black text-white leading-tight mb-8">
@@ -66,8 +66,8 @@ export const HowItWorks = () => {
                         >
                             {/* Number label */}
                             <div className="mb-10 flex justify-center">
-                                <div className="w-24 h-24 rounded-full glass-premium flex items-center justify-center relative transition-all duration-500 group-hover:scale-110 group-hover:border-orange-DEFAULT/40">
-                                    <step.icon className="text-white group-hover:text-orange-DEFAULT transition-colors" size={32} />
+                                <div className="w-24 h-24 rounded-full glass-premium flex items-center justify-center relative transition-all duration-500 group-hover:scale-110 group-hover:border-orange/40">
+                                    <step.icon className="text-white group-hover:text-orange transition-colors" size={32} />
 
                                     {/* Small Number Bubble */}
                                     <div className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-lg transform transition-transform group-hover:rotate-12">
@@ -76,7 +76,7 @@ export const HowItWorks = () => {
                                 </div>
                             </div>
 
-                            <h3 className="text-white font-heading font-bold text-xl mb-4 group-hover:text-orange-DEFAULT transition-colors tracking-tight">{step.title}</h3>
+                            <h3 className="text-white font-heading font-bold text-xl mb-4 group-hover:text-orange transition-colors tracking-tight">{step.title}</h3>
                             <p className="text-white/40 text-sm leading-relaxed font-medium px-4 transition-colors group-hover:text-white/60">{step.description}</p>
 
                             {/* Decorative connector for desktop */}
@@ -100,7 +100,7 @@ export const HowItWorks = () => {
                         className="inline-flex items-center gap-4 text-white/40 hover:text-white transition-all group font-bold tracking-widest text-[10px] uppercase py-4 px-8 rounded-full glass-premium"
                     >
                         TRANSFORMA TU OPERACIÓN HOY
-                        <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-orange-DEFAULT transition-colors">
+                        <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-orange transition-colors">
                             <ArrowRight size={12} className="text-white" />
                         </div>
                     </a>

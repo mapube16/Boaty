@@ -5,11 +5,46 @@ import { User } from '../models/User.js';
 import { InviteToken } from '../models/InviteToken.js';
 import { Boat } from '../models/Boat.js';
 import { Booking } from '../models/Booking.js';
+import { FinancialInfo } from '../models/FinancialInfo.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 import { generateToken, hashToken } from '../utils/crypto.js';
 import { sendInviteEmail } from '../utils/email.js';
 
 const router = express.Router();
+
+// GET /api/admin/users-stats — Listado de usuarios y sus estadísticas
+router.get('/users-stats', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        // Agregación de reservas por cliente
+        const clientStats = await Booking.aggregate([
+            {
+                $group: {
+                    _id: '$clienteEmail',
+                    nombre: { $first: '$clienteNombre' },
+                    telefono: { $first: '$clienteTelefono' },
+                    totalViajes: { $sum: 1 },
+                    totalGastado: { $sum: '$precioTotal' },
+                    ultimaReserva: { $max: '$fecha' }
+                }
+            },
+            { $sort: { totalViajes: -1 } }
+        ]);
+
+        // Disponibilidad de lanchas
+        const boats = await Boat.find({})
+            .select('nombre tipo estado capacidad matricula')
+            .sort({ nombre: 1 });
+
+        return res.json({
+            success: true,
+            clients: clientStats,
+            boats: boats
+        });
+    } catch (error) {
+        console.error('[ADMIN] Error obteniendo estadísticas de usuarios:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
 
 const normalizeEmail = (email) => (typeof email === 'string' ? email.toLowerCase().trim() : '');
 
@@ -383,6 +418,29 @@ router.post('/seed-operator-data', async (req, res) => {
             }
         }
 
+        // Crear registros FinancialInfo para reservas completadas
+        for (const bk of createdBookings) {
+            if (bk.estado === 'completada') {
+                await FinancialInfo.findOneAndUpdate(
+                    { bookingId: bk._id },
+                    {
+                        operatorId: operator._id,
+                        bookingId: bk._id,
+                        clienteNombre: bk.clienteNombre,
+                        codigoReserva: bk.codigo,
+                        destino: bk.destino || '',
+                        tipoViaje: bk.tipoViaje || '',
+                        fecha: bk.fecha,
+                        pasajeros: bk.pasajeros,
+                        duracionHoras: bk.duracionHoras || null,
+                        montoCobrado: bk.precioTotal || 0,
+                        estadoRegistro: 'completada',
+                    },
+                    { upsert: true, new: true }
+                );
+            }
+        }
+
         return res.status(201).json({
             success: true,
             message: `Seed completado: ${boats.length} embarcaciones, ${createdBookings.length} reservas creadas para ${operatorEmail}`,
@@ -392,6 +450,119 @@ router.post('/seed-operator-data', async (req, res) => {
     } catch (error) {
         console.error('[ADMIN] Error en seed:', error.message);
         return res.status(500).json({ success: false, message: `Error: ${error.message}` });
+    }
+});
+
+// GET /api/admin/system-users — Lista usuarios del sistema con teléfono
+router.get('/system-users', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        const [users, providers] = await Promise.all([
+            User.find({ role: { $in: ['OPERATOR', 'STAFF', 'ADMIN', 'CLIENT'] } })
+                .select('_id email role status telefono')
+                .sort({ role: 1, email: 1 })
+                .lean(),
+            Provider.find({})
+                .select('_id nombre apellido empresa email telefono estado')
+                .sort({ nombre: 1 })
+                .lean(),
+        ]);
+        return res.json({ success: true, users, providers });
+    } catch (error) {
+        console.error('[ADMIN] Error obteniendo system-users:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// PATCH /api/admin/users/:id/telefono — Actualizar teléfono de un usuario
+router.patch('/users/:id/telefono', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        const { telefono } = req.body;
+        const user = await User.findByIdAndUpdate(
+            req.params.id,
+            { telefono: telefono || null },
+            { new: true }
+        ).select('_id email role telefono');
+        if (!user) return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+        return res.json({ success: true, user });
+    } catch (error) {
+        console.error('[ADMIN] Error actualizando telefono usuario:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// PATCH /api/admin/providers/:id/telefono — Actualizar teléfono de un proveedor
+router.patch('/providers/:id/telefono', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        const { telefono } = req.body;
+        const provider = await Provider.findByIdAndUpdate(
+            req.params.id,
+            { telefono: telefono || null },
+            { new: true }
+        ).select('_id nombre email telefono');
+        if (!provider) return res.status(404).json({ success: false, message: 'Proveedor no encontrado.' });
+        return res.json({ success: true, provider });
+    } catch (error) {
+        console.error('[ADMIN] Error actualizando telefono proveedor:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// GET /api/admin/financial-info — Resumen financiero por operador (solo STAFF)
+router.get('/financial-info', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        const grouped = await FinancialInfo.aggregate([
+            {
+                $group: {
+                    _id: '$operatorId',
+                    totalViajes: { $sum: 1 },
+                    totalIngresos: { $sum: '$montoCobrado' },
+                    viajesCompletados: {
+                        $sum: { $cond: [{ $eq: ['$estadoRegistro', 'completada'] }, 1, 0] },
+                    },
+                    viajesCancelados: {
+                        $sum: { $cond: [{ $eq: ['$estadoRegistro', 'cancelada'] }, 1, 0] },
+                    },
+                    ultimaActividad: { $max: '$fecha' },
+                    registros: {
+                        $push: {
+                            _id: '$_id',
+                            bookingId: '$bookingId',
+                            clienteNombre: '$clienteNombre',
+                            codigoReserva: '$codigoReserva',
+                            destino: '$destino',
+                            tipoViaje: '$tipoViaje',
+                            fecha: '$fecha',
+                            pasajeros: '$pasajeros',
+                            duracionHoras: '$duracionHoras',
+                            montoCobrado: '$montoCobrado',
+                            estadoRegistro: '$estadoRegistro',
+                        },
+                    },
+                },
+            },
+            { $sort: { totalIngresos: -1 } },
+        ]);
+
+        const operatorIds = grouped.map(g => g._id);
+        const operators = await User.find({ _id: { $in: operatorIds } }, 'email role');
+        const operatorMap = {};
+        operators.forEach(op => { operatorMap[op._id.toString()] = op; });
+
+        const result = grouped.map(g => ({
+            operadorId: g._id,
+            operadorEmail: operatorMap[g._id?.toString()]?.email || 'Desconocido',
+            totalViajes: g.totalViajes,
+            totalIngresos: g.totalIngresos,
+            viajesCompletados: g.viajesCompletados,
+            viajesCancelados: g.viajesCancelados,
+            ultimaActividad: g.ultimaActividad,
+            registros: g.registros.sort((a, b) => new Date(b.fecha) - new Date(a.fecha)),
+        }));
+
+        return res.json({ success: true, data: result });
+    } catch (error) {
+        console.error('[ADMIN] Error obteniendo financial-info:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
     }
 });
 

@@ -6,6 +6,9 @@ import { InvitePage } from './pages/InvitePage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { ProviderDashboard } from './pages/ProviderDashboard';
 import { OperatorDashboard } from './pages/OperatorDashboard';
+import { ClientDashboard } from './pages/ClientDashboard';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import { ProtectedRoute } from './components/ProtectedRoute';
 
 function App() {
@@ -14,6 +17,8 @@ function App() {
             <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/invite" element={<InvitePage />} />
                 <Route
                     path="/admin"
@@ -36,6 +41,14 @@ function App() {
                     element={
                         <ProtectedRoute roles={['OPERATOR']}>
                             <OperatorDashboard />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/cliente"
+                    element={
+                        <ProtectedRoute roles={['CLIENT']}>
+                            <ClientDashboard />
                         </ProtectedRoute>
                     }
                 />

@@ -7,6 +7,10 @@ import providersRouter from './routes/providers.js';
 import authRouter from './routes/auth.js';
 import adminRouter from './routes/admin.js';
 import operatorRouter from './routes/operator.js';
+import clientRouter from './routes/client.js';
+import paymentsRouter from './routes/payments.js';
+import { requireAuth } from './middleware/auth.js';
+import { addClient } from './sse.js';
 
 dotenv.config();
 
@@ -29,6 +33,27 @@ app.use('/api/providers', providersRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/operator', operatorRouter);
+app.use('/api/client', clientRouter);
+app.use('/api/payments', paymentsRouter);
+
+// SSE — real-time event stream (authenticated)
+app.get('/api/events', requireAuth, (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // nginx: disable buffering
+    res.flushHeaders();
+
+    // Register client
+    addClient(req.user._id, req.user.role, res);
+
+    // Keep-alive ping every 25 s
+    const ping = setInterval(() => {
+        try { res.write(': ping\n\n'); } catch (_) { clearInterval(ping); }
+    }, 25000);
+
+    req.on('close', () => clearInterval(ping));
+});
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -73,7 +73,7 @@ export const InvitePage = () => {
                         <h1 className="text-white font-heading font-extrabold text-3xl tracking-widest">
                             BOATY
                         </h1>
-                        <div className="h-[2px] bg-gradient-to-r from-orange-DEFAULT to-orange-light mt-2 mx-auto w-16" />
+                        <div className="h-[2px] bg-gradient-to-r from-orange to-orange-light mt-2 mx-auto w-16" />
                     </a>
                 </div>
 
@@ -116,7 +116,7 @@ export const InvitePage = () => {
                                             type={showPassword ? 'text' : 'password'}
                                             value={password}
                                             onChange={(e) => setPassword(e.target.value)}
-                                            className="w-full rounded-xl bg-white/[0.06] border border-white/10 px-4 py-3 pr-12 text-sm text-white placeholder-white/30 focus:outline-none focus:border-orange-DEFAULT/50 focus:ring-1 focus:ring-orange-DEFAULT/25 transition-all"
+                                            className="w-full rounded-xl bg-white/[0.06] border border-white/10 px-4 py-3 pr-12 text-sm text-white placeholder-white/30 focus:outline-none focus:border-orange/50 focus:ring-1 focus:ring-orange/25 transition-all"
                                             placeholder="Mínimo 8 caracteres"
                                             required
                                             minLength={8}
@@ -138,7 +138,7 @@ export const InvitePage = () => {
                                         type={showPassword ? 'text' : 'password'}
                                         value={confirm}
                                         onChange={(e) => setConfirm(e.target.value)}
-                                        className="w-full rounded-xl bg-white/[0.06] border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-orange-DEFAULT/50 focus:ring-1 focus:ring-orange-DEFAULT/25 transition-all"
+                                        className="w-full rounded-xl bg-white/[0.06] border border-white/10 px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-orange/50 focus:ring-1 focus:ring-orange/25 transition-all"
                                         placeholder="Repite tu contraseña"
                                         required
                                         minLength={8}
@@ -178,7 +178,7 @@ export const InvitePage = () => {
                                 <button
                                     type="submit"
                                     disabled={loading || !token}
-                                    className="w-full rounded-xl bg-orange-DEFAULT text-white py-3.5 text-sm font-black uppercase tracking-[0.25em] hover:bg-orange-dark transition-all shadow-premium-orange hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+                                    className="w-full rounded-xl bg-orange text-white py-3.5 text-sm font-black uppercase tracking-[0.25em] hover:bg-orange-dark transition-all shadow-premium-orange hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
                                 >
                                     {loading ? 'Activando cuenta...' : 'Crear mi cuenta'}
                                 </button>

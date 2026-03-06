@@ -27,6 +27,11 @@ const userSchema = new mongoose.Schema({
         ref: 'Provider',
         default: null,
     },
+    telefono: {
+        type: String,
+        trim: true,
+        default: null,
+    },
     lastLoginAt: {
         type: Date,
         default: null,

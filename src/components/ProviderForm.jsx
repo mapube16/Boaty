@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, Loader2, Ship, MapPin, Users, Mail, Phone, Building, ChevronRight, AlertCircle } from 'lucide-react';
+import { CheckCircle, Loader2, Mail, Phone, ChevronRight, AlertCircle } from 'lucide-react';
 
 const boatTypes = [
     'Lancha deportiva',
@@ -119,10 +119,11 @@ export const ProviderForm = () => {
     };
 
     const inputClasses = (field) => `
-        w-full bg-white/50 backdrop-blur-sm border ${errors[field] ? 'border-red-300 ring-1 ring-red-100' : 'border-cream focus:border-orange-DEFAULT'}
+        w-full bg-white/50 backdrop-blur-sm border ${errors[field] ? 'border-red-300 ring-1 ring-red-100' : 'border-cream focus:border-orange'}
         px-5 py-4 rounded-2xl text-navy-dark font-medium text-sm transition-all outline-none placeholder:text-navy-dark/30
     `;
 
+    // htmlFor helpers keep labels associated with inputs for assistive technology
     const labelClasses = "block text-[10px] uppercase tracking-widest font-black text-navy-dark/40 mb-2 ml-1";
 
     if (submitted) {
@@ -132,14 +133,14 @@ export const ProviderForm = () => {
                     <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="max-w-2xl mx-auto glass-premium p-16 rounded-[48px] text-center border-orange-DEFAULT/10 shadow-premium"
+                        className="max-w-2xl mx-auto glass-premium p-16 rounded-[48px] text-center border-orange/10 shadow-premium"
                     >
-                        <div className="w-24 h-24 bg-orange-DEFAULT rounded-[32px] flex items-center justify-center mx-auto mb-10 shadow-premium-orange rotate-3">
+                        <div className="w-24 h-24 bg-orange rounded-[32px] flex items-center justify-center mx-auto mb-10 shadow-premium-orange rotate-3">
                             <CheckCircle className="text-white" size={48} />
                         </div>
                         <h2 className="text-4xl md:text-5xl font-heading font-black text-navy-dark mb-6">REGISTRO RECIBIDO.</h2>
                         <p className="text-navy-dark/50 text-xl font-medium mb-12">
-                            Gracias, <span className="text-navy-dark underline decoration-orange-DEFAULT underline-offset-4">{formData.nombre}</span>. El equipo de BOATY revisará tu flota en las próximas 24-48 horas.
+                            Gracias, <span className="text-navy-dark underline decoration-orange underline-offset-4">{formData.nombre}</span>. El equipo de BOATY revisará tu flota en las próximas 24-48 horas.
                         </p>
                         <div className="bg-white/40 rounded-3xl p-8 text-left border border-white/60">
                             <h4 className="font-heading font-bold text-navy-dark mb-4 text-sm uppercase tracking-widest">Protocolo de Onboarding</h4>
@@ -150,7 +151,7 @@ export const ProviderForm = () => {
                                     'Acceso exclusivo a la plataforma de gestión.',
                                 ].map((item, i) => (
                                     <div key={i} className="flex items-center gap-4 text-navy-dark/60 text-sm font-medium">
-                                        <div className="w-2 h-2 rounded-full bg-orange-DEFAULT" />
+                                        <div className="w-2 h-2 rounded-full bg-orange" />
                                         {item}
                                     </div>
                                 ))}
@@ -173,7 +174,7 @@ export const ProviderForm = () => {
                         viewport={{ once: true }}
                         transition={{ duration: 1 }}
                     >
-                        <span className="text-orange-DEFAULT font-bold text-[10px] uppercase tracking-[0.4em] mb-6 block">
+                        <span className="text-orange font-bold text-[10px] uppercase tracking-[0.4em] mb-6 block">
                             REGISTRO DE SOCIOS
                         </span>
                         <h2 className="text-6xl md:text-7xl font-heading font-black text-navy-dark leading-[0.9] mb-10 tracking-tightest">
@@ -216,30 +217,30 @@ export const ProviderForm = () => {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className={labelClasses}>Primer Nombre</label>
-                                        <input type="text" name="nombre" value={formData.nombre} onChange={handleChange} placeholder="Ej: Julian" className={inputClasses('nombre')} />
-                                        {errors.nombre && <p className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.nombre}</p>}
+                                        <label htmlFor="f-nombre" className={labelClasses}>Primer Nombre</label>
+                                        <input id="f-nombre" type="text" name="nombre" value={formData.nombre} onChange={handleChange} placeholder="Ej: Julian" className={inputClasses('nombre')} aria-required="true" aria-describedby={errors.nombre ? 'err-nombre' : undefined} />
+                                        {errors.nombre && <p id="err-nombre" role="alert" className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.nombre}</p>}
                                     </div>
                                     <div>
-                                        <label className={labelClasses}>Apellido</label>
-                                        <input type="text" name="apellido" value={formData.apellido} onChange={handleChange} placeholder="Ej: Reyes" className={inputClasses('apellido')} />
-                                        {errors.apellido && <p className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.apellido}</p>}
+                                        <label htmlFor="f-apellido" className={labelClasses}>Apellido</label>
+                                        <input id="f-apellido" type="text" name="apellido" value={formData.apellido} onChange={handleChange} placeholder="Ej: Reyes" className={inputClasses('apellido')} aria-required="true" aria-describedby={errors.apellido ? 'err-apellido' : undefined} />
+                                        {errors.apellido && <p id="err-apellido" role="alert" className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.apellido}</p>}
                                     </div>
                                 </div>
                                 <div>
-                                    <label className={labelClasses}>Email Corporativo</label>
-                                    <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="socio@empresa.com" className={inputClasses('email')} />
-                                    {errors.email && <p className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.email}</p>}
+                                    <label htmlFor="f-email" className={labelClasses}>Email Corporativo</label>
+                                    <input id="f-email" type="email" name="email" value={formData.email} onChange={handleChange} placeholder="socio@empresa.com" autoComplete="email" className={inputClasses('email')} aria-required="true" aria-describedby={errors.email ? 'err-email' : undefined} />
+                                    {errors.email && <p id="err-email" role="alert" className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.email}</p>}
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className={labelClasses}>Teléfono</label>
-                                        <input type="tel" name="telefono" value={formData.telefono} onChange={handleChange} placeholder="+57 ---" className={inputClasses('telefono')} />
-                                        {errors.telefono && <p className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.telefono}</p>}
+                                        <label htmlFor="f-telefono" className={labelClasses}>Teléfono</label>
+                                        <input id="f-telefono" type="tel" name="telefono" value={formData.telefono} onChange={handleChange} placeholder="+57 ---" autoComplete="tel" className={inputClasses('telefono')} aria-required="true" aria-describedby={errors.telefono ? 'err-telefono' : undefined} />
+                                        {errors.telefono && <p id="err-telefono" role="alert" className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.telefono}</p>}
                                     </div>
                                     <div>
-                                        <label className={labelClasses}>Empresa</label>
-                                        <input type="text" name="empresa" value={formData.empresa} onChange={handleChange} placeholder="Nombre Comercial" className={inputClasses('empresa')} />
+                                        <label htmlFor="f-empresa" className={labelClasses}>Empresa</label>
+                                        <input id="f-empresa" type="text" name="empresa" value={formData.empresa} onChange={handleChange} placeholder="Nombre Comercial" autoComplete="organization" className={inputClasses('empresa')} />
                                     </div>
                                 </div>
                             </div>
@@ -254,48 +255,70 @@ export const ProviderForm = () => {
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className={labelClasses}>Destino</label>
-                                        <select name="destino" value={formData.destino} onChange={handleChange} className={inputClasses('destino')}>
+                                        <label htmlFor="f-destino" className={labelClasses}>Destino</label>
+                                        <select id="f-destino" name="destino" value={formData.destino} onChange={handleChange} className={inputClasses('destino')} aria-required="true" aria-describedby={errors.destino ? 'err-destino' : undefined}>
                                             <option value="">Seleccionar</option>
                                             {destinations.map(d => <option key={d} value={d}>{d}</option>)}
                                         </select>
+                                        {/* Select errors were silently dropped before — now surfaced */}
+                                        {errors.destino && <p id="err-destino" role="alert" className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.destino}</p>}
                                     </div>
                                     <div>
-                                        <label className={labelClasses}>Embarcación</label>
-                                        <select name="tipoEmbarcacion" value={formData.tipoEmbarcacion} onChange={handleChange} className={inputClasses('tipoEmbarcacion')}>
+                                        <label htmlFor="f-tipo" className={labelClasses}>Embarcación</label>
+                                        <select id="f-tipo" name="tipoEmbarcacion" value={formData.tipoEmbarcacion} onChange={handleChange} className={inputClasses('tipoEmbarcacion')} aria-required="true" aria-describedby={errors.tipoEmbarcacion ? 'err-tipo' : undefined}>
                                             <option value="">Seleccionar</option>
                                             {boatTypes.map(t => <option key={t} value={t}>{t}</option>)}
                                         </select>
+                                        {errors.tipoEmbarcacion && <p id="err-tipo" role="alert" className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.tipoEmbarcacion}</p>}
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div>
-                                        <label className={labelClasses}>Cantidad</label>
-                                        <input type="number" name="cantidadEmbarcaciones" value={formData.cantidadEmbarcaciones} onChange={handleChange} placeholder="0" min="1" step="1" className={inputClasses('cantidadEmbarcaciones')} />
-                                        {errors.cantidadEmbarcaciones && <p className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.cantidadEmbarcaciones}</p>}
+                                        <label htmlFor="f-cantidad" className={labelClasses}>Cantidad</label>
+                                        <input id="f-cantidad" type="number" name="cantidadEmbarcaciones" value={formData.cantidadEmbarcaciones} onChange={handleChange} placeholder="0" min="1" step="1" className={inputClasses('cantidadEmbarcaciones')} aria-required="true" aria-describedby={errors.cantidadEmbarcaciones ? 'err-cantidad' : undefined} />
+                                        {errors.cantidadEmbarcaciones && <p id="err-cantidad" role="alert" className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.cantidadEmbarcaciones}</p>}
                                     </div>
                                     <div>
-                                        <label className={labelClasses}>Capacidad</label>
-                                        <input type="number" name="capacidadPersonas" value={formData.capacidadPersonas} onChange={handleChange} placeholder="Max Pax" min="1" step="1" className={inputClasses('capacidadPersonas')} />
-                                        {errors.capacidadPersonas && <p className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.capacidadPersonas}</p>}
+                                        <label htmlFor="f-capacidad" className={labelClasses}>Capacidad</label>
+                                        <input id="f-capacidad" type="number" name="capacidadPersonas" value={formData.capacidadPersonas} onChange={handleChange} placeholder="Max Pax" min="1" step="1" className={inputClasses('capacidadPersonas')} aria-describedby={errors.capacidadPersonas ? 'err-capacidad' : undefined} />
+                                        {errors.capacidadPersonas && <p id="err-capacidad" role="alert" className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.capacidadPersonas}</p>}
                                     </div>
+                                </div>
+                                <div>
+                                    <label htmlFor="f-descripcion" className={labelClasses}>Descripción <span className="normal-case tracking-normal font-medium opacity-60">(opcional)</span></label>
+                                    <textarea
+                                        id="f-descripcion"
+                                        name="descripcion"
+                                        value={formData.descripcion}
+                                        onChange={handleChange}
+                                        placeholder="Cuéntanos sobre tu flota, servicios adicionales, etc."
+                                        rows={3}
+                                        className={`${inputClasses('descripcion')} resize-none`}
+                                    />
                                 </div>
                             </div>
 
                             {/* Terms */}
                             <div className="pt-6">
                                 <label
+                                    htmlFor="f-terminos"
                                     className="flex items-start gap-4 cursor-pointer group select-none"
                                 >
                                     <div className="relative mt-0.5 shrink-0">
+                                        {/* Native checkbox is visually hidden but remains the actual interactive element
+                                            — this preserves keyboard (Space) and AT support without any extra ARIA */}
                                         <input
+                                            id="f-terminos"
                                             type="checkbox"
                                             name="aceptaTerminos"
                                             checked={formData.aceptaTerminos}
                                             onChange={handleChange}
                                             className="absolute opacity-0 w-6 h-6 cursor-pointer -top-0.5 -left-0.5 z-10"
+                                            aria-required="true"
+                                            aria-describedby={errors.aceptaTerminos ? 'err-terminos' : undefined}
                                         />
-                                        <div className={`w-6 h-6 border-2 rounded-lg transition-all duration-300 flex items-center justify-center ${formData.aceptaTerminos ? 'bg-orange-DEFAULT border-orange-DEFAULT shadow-premium-orange' : 'border-navy-dark/10 bg-white group-hover:border-orange-DEFAULT/30'}`}>
+                                        {/* Visual-only indicator, aria-hidden since the real input above handles AT */}
+                                        <div aria-hidden="true" className={`w-6 h-6 border-2 rounded-lg transition-all duration-300 flex items-center justify-center ${formData.aceptaTerminos ? 'bg-orange border-orange shadow-premium-orange' : 'border-navy-dark/10 bg-white group-hover:border-orange/30'}`}>
                                             {formData.aceptaTerminos && (
                                                 <motion.div
                                                     initial={{ scale: 0, rotate: -20 }}
@@ -350,7 +373,7 @@ export const ProviderForm = () => {
             </div>
 
             {/* Decorative background blur */}
-            <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-orange-DEFAULT/5 rounded-full blur-[100px] -translate-x-1/2 z-0" />
+            <div className="absolute top-1/2 left-0 w-[500px] h-[500px] bg-orange/5 rounded-full blur-[100px] -translate-x-1/2 z-0" />
         </section>
     );
 };

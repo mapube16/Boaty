@@ -34,7 +34,7 @@ export const Hero = () => {
                         className="inline-block px-5 py-2 glass-premium rounded-full mb-8 border border-white/10"
                     >
                         <span className="text-white/60 text-[10px] uppercase tracking-[0.3em] font-bold">
-                            Elevando la navegación <span className="text-orange-DEFAULT mx-2">•</span> On Demand
+                            Elevando la navegación <span className="text-orange mx-2">•</span> On Demand
                         </span>
                     </motion.div>
 
@@ -72,7 +72,7 @@ export const Hero = () => {
                     >
                         <a
                             href="#registro"
-                            className="group bg-orange-DEFAULT text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-orange-dark transition-all shadow-premium-orange hover:shadow-orange-DEFAULT/40 flex items-center gap-3 active:scale-95"
+                            className="group bg-orange text-white px-10 py-5 rounded-full font-bold text-lg hover:bg-orange-dark transition-all shadow-premium-orange hover:shadow-orange/40 flex items-center gap-3 active:scale-95"
                         >
                             COMENZAR AHORA
                             <ArrowRight className="transition-transform group-hover:translate-x-1" size={20} />
@@ -100,7 +100,7 @@ export const Hero = () => {
                             <div key={i} className="text-center space-y-2">
                                 <div className="text-4xl font-heading font-black text-white">{stat.value}</div>
                                 <div className="text-[10px] uppercase tracking-widest text-white/40 font-bold">{stat.label}</div>
-                                <div className="w-8 h-[1px] bg-orange-DEFAULT mx-auto opacity-30" />
+                                <div className="w-8 h-[1px] bg-orange mx-auto opacity-30" />
                             </div>
                         ))}
                     </motion.div>
@@ -108,7 +108,7 @@ export const Hero = () => {
             </div>
 
             {/* Decorative Blurs */}
-            <div className="absolute top-1/4 -left-20 w-96 h-96 bg-orange-DEFAULT/10 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-1/4 -left-20 w-96 h-96 bg-orange/10 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-navy-light/20 rounded-full blur-[120px] pointer-events-none" />
         </section>
     );
