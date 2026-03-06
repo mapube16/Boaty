@@ -59,6 +59,5 @@ const financialInfoSchema = new mongoose.Schema({
 });
 
 financialInfoSchema.index({ operatorId: 1, fecha: -1 });
-financialInfoSchema.index({ bookingId: 1 }, { unique: true });
 
 export const FinancialInfo = mongoose.model('FinancialInfo', financialInfoSchema);

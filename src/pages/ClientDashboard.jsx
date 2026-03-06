@@ -128,7 +128,7 @@ export const ClientDashboard = () => {
 
     // Real-time SSE: update booking state instantly when operator changes it
     useEffect(() => {
-        const es = new EventSource('http://localhost:3002/api/events', { withCredentials: true });
+        const es = new EventSource('/api/events', { withCredentials: true });
         es.addEventListener('booking_event', (e) => {
             const payload = JSON.parse(e.data);
             if (payload.type === 'booking_status') {

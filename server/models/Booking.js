@@ -97,6 +97,5 @@ const bookingSchema = new mongoose.Schema({
 bookingSchema.index({ operatorId: 1, fecha: 1 });
 bookingSchema.index({ boatId: 1, fecha: 1 });
 bookingSchema.index({ providerId: 1 });
-bookingSchema.index({ codigo: 1 }, { unique: true });
 
 export const Booking = mongoose.model('Booking', bookingSchema);

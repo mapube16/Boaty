@@ -1,4 +1,5 @@
 import express from 'express';
+import crypto from 'crypto';
 import { MercadoPagoConfig, Preference, Payment } from 'mercadopago';
 import { Booking } from '../models/Booking.js';
 import { requireAuth } from '../middleware/auth.js';
@@ -9,22 +10,6 @@ const router = express.Router();
 const mp = new MercadoPagoConfig({
     accessToken: process.env.MP_ACCESS_TOKEN || '',
     options: { timeout: 5000 },
-});
-
-/**
- * GET /api/payments/test-token  — dev only, remove before production
- * Validates that MP_ACCESS_TOKEN can reach the MP API.
- */
-router.get('/test-token', async (req, res) => {
-    try {
-        const response = await fetch('https://api.mercadopago.com/v1/payment_methods', {
-            headers: { Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}` },
-        });
-        const data = await response.json();
-        res.json({ status: response.status, ok: response.ok, sample: data?.slice?.(0, 2) ?? data });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
 });
 
 /**
@@ -122,6 +107,26 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
                    : req.body;
 
         const { type, data } = body;
+
+        // Verify MercadoPago webhook signature when secret is configured
+        if (process.env.MP_WEBHOOK_SECRET) {
+            const xSignature = req.headers['x-signature'];
+            const xRequestId = req.headers['x-request-id'];
+            if (xSignature) {
+                const parts = {};
+                xSignature.split(',').forEach(p => {
+                    const [k, v] = p.trim().split('=');
+                    parts[k] = v;
+                });
+                const manifest = `id:${data?.id};request-id:${xRequestId};ts:${parts.ts};`;
+                const hmac = crypto.createHmac('sha256', process.env.MP_WEBHOOK_SECRET)
+                    .update(manifest).digest('hex');
+                if (hmac !== parts.v1) {
+                    console.warn('[PAYMENTS] Webhook signature mismatch — request rejected');
+                    return res.status(401).json({ error: 'Invalid signature' });
+                }
+            }
+        }
 
         console.log(`[PAYMENTS] Webhook MP: type=${type}, id=${data?.id}`);
 

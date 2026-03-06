@@ -8,7 +8,7 @@ import {
     Phone, Mail, Navigation, Filter, RefreshCw, Hash
 } from 'lucide-react';
 
-const API = 'http://localhost:3002/api/operator';
+const API = '/api/operator';
 
 const estadoConfig = {
     pendiente: { label: 'Pendiente', color: 'amber', icon: Clock },
@@ -69,7 +69,7 @@ export const OperatorDashboard = () => {
 
     // Real-time SSE: refresh data when a booking event arrives
     useEffect(() => {
-        const es = new EventSource('http://localhost:3002/api/events', { withCredentials: true });
+        const es = new EventSource('/api/events', { withCredentials: true });
         es.addEventListener('booking_event', () => { fetchData(); });
         es.onerror = () => { /* reconnect handled by browser */ };
         return () => es.close();

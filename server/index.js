@@ -1,6 +1,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import providersRouter from './routes/providers.js';
@@ -19,14 +21,47 @@ const PORT = process.env.PORT || 3001;
 
 app.set('trust proxy', 1);
 
-// Middleware
+// ── Security middleware ────────────────────────────────────────────────────────
+app.use(helmet({
+    contentSecurityPolicy: false, // Relaxed for SPA; tighten per-domain in production
+}));
+
+// ── CORS — configurable via CORS_ORIGINS env var ───────────────────────────────
+const allowedOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map(o => o.trim())
+    : ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173'];
+
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173'],
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     credentials: true,
 }));
-app.use(express.json());
+
+app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
+
+// ── Rate limiting ──────────────────────────────────────────────────────────────
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 30,                  // 30 attempts per window
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Demasiados intentos. Intenta de nuevo en 15 minutos.' },
+});
+
+const apiLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000,  // 1 minute
+    max: 120,                  // 120 requests per minute
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Rate limit excedido. Intenta de nuevo en un momento.' },
+});
+
+// Apply rate limiters
+app.use('/api/auth/login', authLimiter);
+app.use('/api/auth/forgot-password', authLimiter);
+app.use('/api/auth/reset-password', authLimiter);
+app.use('/api/', apiLimiter);
 
 // Routes
 app.use('/api/providers', providersRouter);

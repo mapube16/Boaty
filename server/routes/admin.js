@@ -51,8 +51,11 @@ const normalizeEmail = (email) => (typeof email === 'string' ? email.toLowerCase
 const validateRole = (role) => ['ADMIN', 'OPERATOR', 'CLIENT', 'STAFF'].includes(role);
 const validateStatus = (status) => ['pending', 'active', 'suspended'].includes(status);
 
-// Bootstrap endpoint for creating the first STAFF user (use only in POC)
+// Bootstrap endpoint for creating the first STAFF user (POC only — disabled in production)
 router.post('/bootstrap-user', async (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+        return res.status(404).json({ success: false, message: 'Not found.' });
+    }
     try {
         const secret = req.headers['x-bootstrap-secret'] || req.body?.bootstrapSecret || req.query?.bootstrapSecret;
         if (!process.env.BOOTSTRAP_SECRET || secret !== process.env.BOOTSTRAP_SECRET) {
@@ -90,21 +93,13 @@ router.post('/bootstrap-user', async (req, res) => {
     }
 });
 
-// Bootstrap endpoint to create any user in one call (use only in POC)
+// Bootstrap endpoint to create any user in one call (POC only — disabled in production)
 router.post('/bootstrap-create-user', async (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+        return res.status(404).json({ success: false, message: 'Not found.' });
+    }
     try {
         const secret = req.headers['x-bootstrap-secret'] || req.body?.bootstrapSecret || req.query?.bootstrapSecret;
-
-        console.log('--- DEBUG bootstrap-create-user ---');
-        console.log('Header x-bootstrap-secret:', JSON.stringify(req.headers['x-bootstrap-secret']));
-        console.log('Body bootstrapSecret:', JSON.stringify(req.body?.bootstrapSecret));
-        console.log('Query bootstrapSecret:', JSON.stringify(req.query?.bootstrapSecret));
-        console.log('Secret recibido:', JSON.stringify(secret));
-        console.log('BOOTSTRAP_SECRET env:', JSON.stringify(process.env.BOOTSTRAP_SECRET));
-        console.log('Son iguales?:', secret === process.env.BOOTSTRAP_SECRET);
-        console.log('Body completo:', JSON.stringify(req.body));
-        console.log('Headers:', JSON.stringify(req.headers, null, 2));
-        console.log('--- FIN DEBUG ---');
 
         if (!process.env.BOOTSTRAP_SECRET || secret !== process.env.BOOTSTRAP_SECRET) {
             return res.status(403).json({ success: false, message: 'No autorizado.' });
@@ -254,8 +249,11 @@ router.post('/providers/:id/approve', requireAuth, requireRole('STAFF'), async (
     }
 });
 
-// ─── Seed endpoint: carga datos de prueba para un operador (solo POC) ───
+// ─── Seed endpoint: carga datos de prueba para un operador (POC only — disabled in production) ───
 router.post('/seed-operator-data', async (req, res) => {
+    if (process.env.NODE_ENV === 'production') {
+        return res.status(404).json({ success: false, message: 'Not found.' });
+    }
     try {
         const secret = req.headers['x-bootstrap-secret'] || req.body?.bootstrapSecret || req.query?.bootstrapSecret;
         if (!process.env.BOOTSTRAP_SECRET || secret !== process.env.BOOTSTRAP_SECRET) {
@@ -562,6 +560,224 @@ router.get('/financial-info', requireAuth, requireRole('STAFF'), async (req, res
         return res.json({ success: true, data: result });
     } catch (error) {
         console.error('[ADMIN] Error obteniendo financial-info:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NEW ADMIN CRUD ENDPOINTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// GET /api/admin/overview — Dashboard KPIs
+router.get('/overview', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        const [
+            totalProviders,
+            pendingProviders,
+            activeProviders,
+            totalBoats,
+            activeBoats,
+            totalBookings,
+            pendingBookings,
+            completedBookings,
+            totalUsers,
+            revenueAgg,
+        ] = await Promise.all([
+            Provider.countDocuments(),
+            Provider.countDocuments({ estado: 'pendiente' }),
+            Provider.countDocuments({ estado: 'activo' }),
+            Boat.countDocuments(),
+            Boat.countDocuments({ estado: 'activa' }),
+            Booking.countDocuments(),
+            Booking.countDocuments({ estado: 'pendiente' }),
+            Booking.countDocuments({ estado: 'completada' }),
+            User.countDocuments(),
+            FinancialInfo.aggregate([{ $group: { _id: null, total: { $sum: '$montoCobrado' }, count: { $sum: 1 } } }]),
+        ]);
+
+        const revenue = revenueAgg[0] || { total: 0, count: 0 };
+
+        return res.json({
+            success: true,
+            data: {
+                providers: { total: totalProviders, pending: pendingProviders, active: activeProviders },
+                boats: { total: totalBoats, active: activeBoats },
+                bookings: { total: totalBookings, pending: pendingBookings, completed: completedBookings },
+                users: { total: totalUsers },
+                revenue: { total: revenue.total, trips: revenue.count },
+            },
+        });
+    } catch (error) {
+        console.error('[ADMIN] Error overview:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// PATCH /api/admin/providers/:id — Update provider fields
+router.patch('/providers/:id', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        const allowedFields = ['nombre', 'apellido', 'empresa', 'email', 'telefono', 'destino', 'tipoEmbarcacion', 'cantidadEmbarcaciones', 'capacidadPersonas', 'descripcion', 'estado'];
+        const updates = {};
+        for (const key of allowedFields) {
+            if (req.body[key] !== undefined) updates[key] = req.body[key];
+        }
+        if (updates.email) updates.email = updates.email.toLowerCase().trim();
+        if (updates.cantidadEmbarcaciones !== undefined) updates.cantidadEmbarcaciones = Number(updates.cantidadEmbarcaciones);
+        if (updates.capacidadPersonas !== undefined) updates.capacidadPersonas = updates.capacidadPersonas ? Number(updates.capacidadPersonas) : null;
+
+        const provider = await Provider.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true });
+        if (!provider) return res.status(404).json({ success: false, message: 'Proveedor no encontrado.' });
+        return res.json({ success: true, provider });
+    } catch (error) {
+        console.error('[ADMIN] Error actualizando proveedor:', error.message);
+        if (error.name === 'ValidationError') {
+            const messages = Object.values(error.errors).map(e => e.message);
+            return res.status(400).json({ success: false, message: messages.join(', ') });
+        }
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// DELETE /api/admin/providers/:id — Delete provider
+router.delete('/providers/:id', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        const provider = await Provider.findByIdAndDelete(req.params.id);
+        if (!provider) return res.status(404).json({ success: false, message: 'Proveedor no encontrado.' });
+        return res.json({ success: true, message: 'Proveedor eliminado.' });
+    } catch (error) {
+        console.error('[ADMIN] Error eliminando proveedor:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// GET /api/admin/boats — List all boats with provider/operator populated
+router.get('/boats', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        const boats = await Boat.find()
+            .populate('providerId', 'nombre apellido empresa email')
+            .populate('operatorId', 'email role')
+            .sort({ createdAt: -1 })
+            .lean();
+        return res.json({ success: true, data: boats });
+    } catch (error) {
+        console.error('[ADMIN] Error obteniendo boats:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// PATCH /api/admin/boats/:id — Update boat fields
+router.patch('/boats/:id', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        const allowedFields = ['nombre', 'tipo', 'capacidad', 'ubicacion', 'estado', 'descripcion', 'matricula'];
+        const updates = {};
+        for (const key of allowedFields) {
+            if (req.body[key] !== undefined) updates[key] = req.body[key];
+        }
+        if (updates.capacidad !== undefined) updates.capacidad = Number(updates.capacidad);
+
+        const boat = await Boat.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true })
+            .populate('providerId', 'nombre apellido empresa email')
+            .populate('operatorId', 'email role');
+        if (!boat) return res.status(404).json({ success: false, message: 'Embarcación no encontrada.' });
+        return res.json({ success: true, boat });
+    } catch (error) {
+        console.error('[ADMIN] Error actualizando boat:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// GET /api/admin/bookings — List all bookings
+router.get('/bookings', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        const bookings = await Booking.find()
+            .populate('boatId', 'nombre tipo matricula')
+            .populate('operatorId', 'email')
+            .populate('providerId', 'nombre apellido empresa')
+            .sort({ fecha: -1 })
+            .lean();
+        return res.json({ success: true, data: bookings });
+    } catch (error) {
+        console.error('[ADMIN] Error obteniendo bookings:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// PATCH /api/admin/bookings/:id — Update booking fields
+router.patch('/bookings/:id', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        const allowedFields = ['estado', 'clienteNombre', 'clienteEmail', 'clienteTelefono', 'pasajeros', 'fecha', 'horaInicio', 'horaFin', 'duracionHoras', 'destino', 'tipoViaje', 'notas', 'precioTotal'];
+        const updates = {};
+        for (const key of allowedFields) {
+            if (req.body[key] !== undefined) updates[key] = req.body[key];
+        }
+        if (updates.pasajeros !== undefined) updates.pasajeros = Number(updates.pasajeros);
+        if (updates.precioTotal !== undefined) updates.precioTotal = Number(updates.precioTotal);
+        if (updates.duracionHoras !== undefined) updates.duracionHoras = updates.duracionHoras ? Number(updates.duracionHoras) : null;
+
+        const booking = await Booking.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true })
+            .populate('boatId', 'nombre tipo matricula')
+            .populate('operatorId', 'email')
+            .populate('providerId', 'nombre apellido empresa');
+        if (!booking) return res.status(404).json({ success: false, message: 'Reserva no encontrada.' });
+        return res.json({ success: true, booking });
+    } catch (error) {
+        console.error('[ADMIN] Error actualizando booking:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// PATCH /api/admin/users/:id — Update user fields (role, status, email, telefono)
+router.patch('/users/:id', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        const allowedFields = ['role', 'status', 'email', 'telefono'];
+        const updates = {};
+        for (const key of allowedFields) {
+            if (req.body[key] !== undefined) updates[key] = req.body[key];
+        }
+        if (updates.role && !validateRole(updates.role)) {
+            return res.status(400).json({ success: false, message: 'Rol inválido.' });
+        }
+        if (updates.status && !validateStatus(updates.status)) {
+            return res.status(400).json({ success: false, message: 'Estado inválido.' });
+        }
+        if (updates.email) updates.email = updates.email.toLowerCase().trim();
+
+        const user = await User.findByIdAndUpdate(req.params.id, updates, { new: true })
+            .select('_id email role status telefono createdAt lastLoginAt');
+        if (!user) return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+        return res.json({ success: true, user });
+    } catch (error) {
+        console.error('[ADMIN] Error actualizando usuario:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// DELETE /api/admin/users/:id — Delete user
+router.delete('/users/:id', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        // Prevent deleting self
+        if (req.params.id === req.user._id.toString()) {
+            return res.status(400).json({ success: false, message: 'No puedes eliminar tu propia cuenta.' });
+        }
+        const user = await User.findByIdAndDelete(req.params.id);
+        if (!user) return res.status(404).json({ success: false, message: 'Usuario no encontrado.' });
+        return res.json({ success: true, message: 'Usuario eliminado.' });
+    } catch (error) {
+        console.error('[ADMIN] Error eliminando usuario:', error.message);
+        return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
+    }
+});
+
+// GET /api/admin/all-users — Full users list for admin management
+router.get('/all-users', requireAuth, requireRole('STAFF'), async (req, res) => {
+    try {
+        const users = await User.find()
+            .select('_id email role status telefono createdAt lastLoginAt providerId')
+            .sort({ createdAt: -1 })
+            .lean();
+        return res.json({ success: true, data: users });
+    } catch (error) {
+        console.error('[ADMIN] Error obteniendo all-users:', error.message);
         return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
     }
 });
