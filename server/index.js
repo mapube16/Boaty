@@ -5,6 +5,12 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+import { existsSync } from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 import providersRouter from './routes/providers.js';
 import authRouter from './routes/auth.js';
 import adminRouter from './routes/admin.js';
@@ -94,6 +100,15 @@ app.get('/api/events', requireAuth, (req, res) => {
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' });
 });
+
+// Serve frontend in production
+if (process.env.NODE_ENV === 'production') {
+    const distPath = join(__dirname, '..', 'dist');
+    if (existsSync(distPath)) {
+        app.use(express.static(distPath));
+        app.get('*', (req, res) => res.sendFile(join(distPath, 'index.html')));
+    }
+}
 
 // Connect to MongoDB and start server
 

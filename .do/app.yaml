@@ -1,0 +1,43 @@
+name: boaty
+region: nyc
+
+services:
+  - name: api
+    source_dir: server
+    github:
+      repo: mapube16/Boaty
+      branch: main
+      deploy_on_push: true
+    run_command: npm start
+    environment_slug: node-js
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-0.5gb
+    routes:
+      - path: /api
+    envs:
+      - key: MONGODB_URI
+        scope: RUN_TIME
+        type: SECRET
+        value: REEMPLAZA_CON_TU_MONGODB_URI
+      - key: JWT_SECRET
+        scope: RUN_TIME
+        type: SECRET
+        value: REEMPLAZA_CON_TU_JWT_SECRET
+      - key: NODE_ENV
+        scope: RUN_TIME
+        value: production
+      - key: CORS_ORIGINS
+        scope: RUN_TIME
+        value: ${APP_URL}
+
+static_sites:
+  - name: frontend
+    source_dir: /
+    github:
+      repo: mapube16/Boaty
+      branch: main
+      deploy_on_push: true
+    build_command: npm install && npm run build
+    output_dir: dist
+    routes:
+      - path: /
