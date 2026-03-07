@@ -168,19 +168,21 @@ const formatDate = (d) => d ? new Date(d).toLocaleDateString('es-CO', { day: 'nu
 const formatDateTime = (d) => d ? new Date(d).toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
 
 const SectionHeader = ({ title, subtitle, onRefresh, loading, children }) => (
-    <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
-        <div>
-            <h1 className="text-2xl font-heading font-black text-navy-dark">{title}</h1>
-            {subtitle && <p className="text-slate-500 text-sm mt-1">{subtitle}</p>}
-        </div>
-        <div className="flex items-center gap-3 flex-shrink-0 flex-wrap">
-            {children}
-            {onRefresh && (
-                <button onClick={onRefresh} disabled={loading}
-                    className="flex items-center gap-2 rounded-xl bg-navy-dark text-white px-4 py-2.5 text-xs font-bold uppercase tracking-widest hover:bg-navy-dark/90 transition-all disabled:opacity-50">
-                    <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Recargar
-                </button>
-            )}
+    <div className="mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div>
+                <h1 className="text-xl sm:text-2xl font-heading font-black text-navy-dark">{title}</h1>
+                {subtitle && <p className="text-slate-500 text-sm mt-1">{subtitle}</p>}
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+                {children}
+                {onRefresh && (
+                    <button onClick={onRefresh} disabled={loading}
+                        className="flex items-center gap-2 rounded-xl bg-navy-dark text-white px-4 py-2.5 text-xs font-bold uppercase tracking-widest hover:bg-navy-dark/90 transition-all disabled:opacity-50">
+                        <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Recargar
+                    </button>
+                )}
+            </div>
         </div>
     </div>
 );
@@ -383,6 +385,82 @@ const ProvidersSection = ({ showMsg }) => {
                 <SearchBar value={search} onChange={setSearch} placeholder="Buscar proveedor..." />
             </SectionHeader>
 
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+                {filtered.length === 0 ? (
+                    <EmptyState icon={<Building size={40} />} text="No hay proveedores." />
+                ) : filtered.map(p => (
+                    <div key={p._id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="min-w-0">
+                                <p className="font-bold text-navy-dark">{p.nombre} {p.apellido}</p>
+                                {p.empresa && <p className="text-xs text-slate-400 truncate">{p.empresa}</p>}
+                                <p className="text-xs text-slate-500 mt-0.5">{p.destino}</p>
+                            </div>
+                            <Badge text={p.estado} color={statusColor(p.estado)} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-1 text-xs text-slate-500 mb-3">
+                            <span className="truncate">{p.email}</span>
+                            <span>{p.telefono}</span>
+                            <span>{p.tipoEmbarcacion}</span>
+                            <span className="text-slate-400">{formatDate(p.createdAt)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+                            <button onClick={() => { setExpandedId(expandedId === p._id ? null : p._id); setEditingId(null); }}
+                                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold">
+                                <Eye size={13} /> Ver
+                            </button>
+                            <button onClick={() => startEdit(p)}
+                                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-50 text-blue-600 text-xs font-bold">
+                                <Edit2 size={13} /> Editar
+                            </button>
+                            {p.estado === 'pendiente' && (
+                                <button onClick={() => approve(p._id)}
+                                    className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-emerald-50 text-emerald-600 text-xs font-bold">
+                                    <CheckCircle size={13} /> OK
+                                </button>
+                            )}
+                            <button onClick={() => deleteProvider(p._id)} className="p-2 rounded-xl bg-red-50 text-red-500">
+                                <Trash2 size={13} />
+                            </button>
+                        </div>
+                        {(expandedId === p._id || editingId === p._id) && (
+                            <div className="mt-3 pt-3 border-t border-slate-100">
+                                {editingId === p._id ? (
+                                    <ProviderEditForm data={editData} onChange={setEditData} onSave={() => saveEdit(p._id)} onCancel={() => setEditingId(null)} />
+                                ) : (
+                                    <div>
+                                        <div className="grid grid-cols-2 gap-3 mb-3">
+                                            <DetailField label="Email" value={p.email} />
+                                            <DetailField label="Teléfono" value={p.telefono} />
+                                            <DetailField label="Empresa" value={p.empresa || '—'} />
+                                            <DetailField label="Capacidad" value={p.capacidadPersonas || '—'} />
+                                        </div>
+                                        {p.descripcion && (
+                                            <div className="bg-slate-50 rounded-xl p-3 mb-3">
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Descripción</p>
+                                                <p className="text-xs text-slate-700">{p.descripcion}</p>
+                                            </div>
+                                        )}
+                                        <div className="flex flex-wrap gap-2">
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest w-full">Cambiar estado:</span>
+                                            {['pendiente', 'revisado', 'activo', 'rechazado'].filter(s => s !== p.estado).map(s => (
+                                                <button key={s} onClick={() => changeStatus(p._id, s)}
+                                                    className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600">
+                                                    {s}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block">
             <TableCard>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
@@ -484,6 +562,7 @@ const ProvidersSection = ({ showMsg }) => {
                     </table>
                 </div>
             </TableCard>
+            </div>
         </>
     );
 };
@@ -493,7 +572,7 @@ const ProviderEditForm = ({ data, onChange, onSave, onCancel }) => {
     return (
         <div>
             <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Editar proveedor</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 <EditField label="Nombre" value={data.nombre} onChange={v => set('nombre', v)} />
                 <EditField label="Apellido" value={data.apellido} onChange={v => set('apellido', v)} />
                 <EditField label="Email" value={data.email} onChange={v => set('email', v)} type="email" />
@@ -581,6 +660,65 @@ const BoatsSection = ({ showMsg }) => {
                 <SearchBar value={search} onChange={setSearch} placeholder="Buscar embarcación..." />
             </SectionHeader>
 
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+                {filtered.length === 0 ? (
+                    <EmptyState icon={<Ship size={40} />} text="No hay embarcaciones." />
+                ) : filtered.map(b => (
+                    <div key={b._id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                        <div className="flex items-start justify-between gap-3 mb-3">
+                            <div className="min-w-0">
+                                <p className="font-bold text-navy-dark">{b.nombre}</p>
+                                <p className="text-xs text-slate-400">{b.tipo}</p>
+                                {b.matricula && <p className="text-xs text-slate-400 font-mono">{b.matricula}</p>}
+                            </div>
+                            <Badge text={b.estado} color={statusColor(b.estado)} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-1 text-xs text-slate-500 mb-3">
+                            <span>{b.capacidad} pax</span>
+                            <span>{b.ubicacion || '—'}</span>
+                            <span className="truncate">{b.providerId ? `${b.providerId.nombre} ${b.providerId.apellido || ''}` : '—'}</span>
+                            <span className="truncate">{b.operatorId?.email || '—'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+                            <button onClick={() => startEdit(b)}
+                                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-50 text-blue-600 text-xs font-bold">
+                                <Edit2 size={13} /> Editar
+                            </button>
+                        </div>
+                        {editingId === b._id && (
+                            <div className="mt-3 pt-3 border-t border-slate-100">
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Editar embarcación</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <EditField label="Nombre" value={editData.nombre} onChange={v => setEditData({ ...editData, nombre: v })} />
+                                    <EditField label="Tipo" value={editData.tipo} onChange={v => setEditData({ ...editData, tipo: v })} />
+                                    <EditField label="Capacidad" value={editData.capacidad} onChange={v => setEditData({ ...editData, capacidad: v })} type="number" />
+                                    <EditField label="Matrícula" value={editData.matricula} onChange={v => setEditData({ ...editData, matricula: v })} />
+                                    <EditField label="Ubicación" value={editData.ubicacion} onChange={v => setEditData({ ...editData, ubicacion: v })} />
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Estado</label>
+                                        <select value={editData.estado} onChange={e => setEditData({ ...editData, estado: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200">
+                                            {['activa', 'mantenimiento', 'inactiva'].map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 mt-3">
+                                    <button onClick={() => saveEdit(b._id)} className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">
+                                        <Save size={13} /> Guardar
+                                    </button>
+                                    <button onClick={() => setEditingId(null)} className="flex-1 flex items-center justify-center gap-2 bg-slate-200 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">
+                                        <X size={13} /> Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block">
             <TableCard>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
@@ -626,7 +764,7 @@ const BoatsSection = ({ showMsg }) => {
                                         <tr>
                                             <td colSpan="8" className="bg-slate-50/80 px-5 py-5">
                                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Editar embarcación</p>
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                                                     <EditField label="Nombre" value={editData.nombre} onChange={v => setEditData({ ...editData, nombre: v })} />
                                                     <EditField label="Tipo" value={editData.tipo} onChange={v => setEditData({ ...editData, tipo: v })} />
                                                     <EditField label="Capacidad" value={editData.capacidad} onChange={v => setEditData({ ...editData, capacidad: v })} type="number" />
@@ -660,6 +798,7 @@ const BoatsSection = ({ showMsg }) => {
                     </table>
                 </div>
             </TableCard>
+            </div>
         </>
     );
 };
@@ -744,6 +883,99 @@ const BookingsSection = ({ showMsg }) => {
                 <SearchBar value={search} onChange={setSearch} placeholder="Buscar reserva..." />
             </SectionHeader>
 
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+                {filtered.length === 0 ? (
+                    <EmptyState icon={<FileText size={40} />} text="No hay reservas." />
+                ) : filtered.map(b => (
+                    <div key={b._id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                            <div className="min-w-0">
+                                <p className="font-mono font-bold text-navy-dark text-sm">{b.codigo}</p>
+                                <p className="font-semibold text-navy-dark">{b.clienteNombre}</p>
+                                <p className="text-xs text-slate-400">{b.clienteEmail}</p>
+                            </div>
+                            <Badge text={b.estado} color={statusColor(b.estado)} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-1 text-xs text-slate-500 mb-3">
+                            <span>{formatDate(b.fecha)}</span>
+                            <span>{b.horaInicio}{b.horaFin ? ` - ${b.horaFin}` : ''}</span>
+                            <span>{b.destino || '—'}</span>
+                            <span>{b.pasajeros} pax</span>
+                            <span>{b.boatId?.nombre || '—'}</span>
+                            <span className="font-bold text-navy-dark">{formatCOP(b.precioTotal)}</span>
+                        </div>
+                        <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+                            <button onClick={() => { setExpandedId(expandedId === b._id ? null : b._id); setEditingId(null); }}
+                                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-bold">
+                                <Eye size={13} /> Detalles
+                            </button>
+                            <button onClick={() => startEdit(b)}
+                                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-50 text-blue-600 text-xs font-bold">
+                                <Edit2 size={13} /> Editar
+                            </button>
+                        </div>
+                        {expandedId === b._id && editingId !== b._id && (
+                            <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                                <div className="grid grid-cols-2 gap-2 text-xs">
+                                    <DetailField label="Teléfono" value={b.clienteTelefono || '—'} />
+                                    <DetailField label="Tipo viaje" value={b.tipoViaje} />
+                                    <DetailField label="Operador" value={b.operatorId?.email || '—'} />
+                                    <DetailField label="Duración" value={b.duracionHoras ? `${b.duracionHoras}h` : '—'} />
+                                </div>
+                                {b.notas && <p className="text-xs text-slate-600 bg-slate-50 rounded-xl p-3">{b.notas}</p>}
+                                <div className="flex flex-wrap gap-2 pt-1">
+                                    <span className="text-[10px] font-bold text-slate-400 uppercase w-full">Cambiar estado:</span>
+                                    {['pendiente', 'confirmada', 'en-curso', 'completada', 'cancelada'].filter(s => s !== b.estado).map(s => (
+                                        <button key={s} onClick={() => changeStatus(b._id, s)}
+                                            className="text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600">
+                                            {s}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {editingId === b._id && (
+                            <div className="mt-3 pt-3 border-t border-slate-100">
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Editar reserva</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <EditField label="Cliente" value={editData.clienteNombre} onChange={v => setEditData({ ...editData, clienteNombre: v })} />
+                                    <EditField label="Email" value={editData.clienteEmail} onChange={v => setEditData({ ...editData, clienteEmail: v })} type="email" />
+                                    <EditField label="Teléfono" value={editData.clienteTelefono} onChange={v => setEditData({ ...editData, clienteTelefono: v })} />
+                                    <EditField label="Pasajeros" value={editData.pasajeros} onChange={v => setEditData({ ...editData, pasajeros: v })} type="number" />
+                                    <EditField label="Destino" value={editData.destino} onChange={v => setEditData({ ...editData, destino: v })} />
+                                    <EditField label="Precio total" value={editData.precioTotal} onChange={v => setEditData({ ...editData, precioTotal: v })} type="number" />
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Estado</label>
+                                        <select value={editData.estado} onChange={e => setEditData({ ...editData, estado: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200">
+                                            {['pendiente', 'confirmada', 'en-curso', 'completada', 'cancelada'].map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Tipo viaje</label>
+                                        <select value={editData.tipoViaje} onChange={e => setEditData({ ...editData, tipoViaje: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200">
+                                            {['paseo', 'pesca', 'excursion', 'evento', 'traslado', 'otro'].map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 mt-3">
+                                    <button onClick={() => saveEdit(b._id)} className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">
+                                        <Save size={13} /> Guardar
+                                    </button>
+                                    <button onClick={() => setEditingId(null)} className="flex-1 flex items-center justify-center gap-2 bg-slate-200 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">
+                                        <X size={13} /> Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block">
             <TableCard>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
@@ -828,7 +1060,7 @@ const BookingsSection = ({ showMsg }) => {
                                         <tr>
                                             <td colSpan="9" className="bg-slate-50/80 px-5 py-5">
                                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Editar reserva {b.codigo}</p>
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                                                     <EditField label="Cliente" value={editData.clienteNombre} onChange={v => setEditData({ ...editData, clienteNombre: v })} />
                                                     <EditField label="Email" value={editData.clienteEmail} onChange={v => setEditData({ ...editData, clienteEmail: v })} type="email" />
                                                     <EditField label="Teléfono" value={editData.clienteTelefono} onChange={v => setEditData({ ...editData, clienteTelefono: v })} />
@@ -873,6 +1105,7 @@ const BookingsSection = ({ showMsg }) => {
                     </table>
                 </div>
             </TableCard>
+            </div>
         </>
     );
 };
@@ -949,6 +1182,73 @@ const UsersSection = ({ showMsg }) => {
                 <SearchBar value={search} onChange={setSearch} placeholder="Buscar usuario..." />
             </SectionHeader>
 
+            {/* Mobile cards */}
+            <div className="md:hidden space-y-3">
+                {filtered.length === 0 ? (
+                    <EmptyState icon={<Users size={40} />} text="No hay usuarios." />
+                ) : filtered.map(u => (
+                    <div key={u._id} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                            <div className="min-w-0">
+                                <p className="font-semibold text-navy-dark text-sm truncate">{u.email}</p>
+                                {u.telefono && <p className="text-xs text-slate-400">{u.telefono}</p>}
+                            </div>
+                            <div className="flex flex-col items-end gap-1 shrink-0">
+                                <Badge text={u.role} color={roleColor(u.role)} />
+                                <Badge text={u.status} color={statusColor(u.status)} />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-1 text-xs text-slate-400 mb-3">
+                            <span>Creado: {formatDate(u.createdAt)}</span>
+                            <span>Login: {u.lastLoginAt ? formatDate(u.lastLoginAt) : 'Nunca'}</span>
+                        </div>
+                        <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
+                            <button onClick={() => startEdit(u)}
+                                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-50 text-blue-600 text-xs font-bold">
+                                <Edit2 size={13} /> Editar
+                            </button>
+                            <button onClick={() => deleteUser(u._id)}
+                                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-red-50 text-red-500 text-xs font-bold">
+                                <Trash2 size={13} /> Eliminar
+                            </button>
+                        </div>
+                        {editingId === u._id && (
+                            <div className="mt-3 pt-3 border-t border-slate-100">
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Editar usuario</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <EditField label="Email" value={editData.email} onChange={v => setEditData({ ...editData, email: v })} type="email" />
+                                    <EditField label="Teléfono" value={editData.telefono} onChange={v => setEditData({ ...editData, telefono: v })} />
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Rol</label>
+                                        <select value={editData.role} onChange={e => setEditData({ ...editData, role: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200">
+                                            {['STAFF', 'ADMIN', 'OPERATOR', 'CLIENT'].map(r => <option key={r} value={r}>{r}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1 block">Estado</label>
+                                        <select value={editData.status} onChange={e => setEditData({ ...editData, status: e.target.value })}
+                                            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200">
+                                            {['active', 'pending', 'suspended'].map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="flex gap-2 mt-3">
+                                    <button onClick={() => saveEdit(u._id)} className="flex-1 flex items-center justify-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">
+                                        <Save size={13} /> Guardar
+                                    </button>
+                                    <button onClick={() => setEditingId(null)} className="flex-1 flex items-center justify-center gap-2 bg-slate-200 text-slate-600 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">
+                                        <X size={13} /> Cancelar
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            {/* Desktop table */}
+            <div className="hidden md:block">
             <TableCard>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
@@ -993,7 +1293,7 @@ const UsersSection = ({ showMsg }) => {
                                         <tr>
                                             <td colSpan="7" className="bg-slate-50/80 px-5 py-5">
                                                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Editar usuario</p>
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                                                     <EditField label="Email" value={editData.email} onChange={v => setEditData({ ...editData, email: v })} type="email" />
                                                     <EditField label="Teléfono" value={editData.telefono} onChange={v => setEditData({ ...editData, telefono: v })} />
                                                     <div>
@@ -1028,6 +1328,7 @@ const UsersSection = ({ showMsg }) => {
                     </table>
                 </div>
             </TableCard>
+            </div>
         </>
     );
 };
