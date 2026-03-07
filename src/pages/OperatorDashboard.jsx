@@ -194,18 +194,17 @@ export const OperatorDashboard = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.15 }}
-                    className="flex items-center gap-2 mb-6"
+                    className="flex flex-wrap items-center gap-2 mb-6"
                 >
                     <TabButton active={tab === 'calendar'} onClick={() => setTab('calendar')} icon={<Calendar size={14} />} label="Calendario" />
                     <TabButton active={tab === 'today'} onClick={() => setTab('today')} icon={<Play size={14} />} label="Viajes Hoy" count={todayBookings.length} />
                     <TabButton active={tab === 'pending'} onClick={() => setTab('pending')} icon={<Clock size={14} />} label="Pendientes" count={pendingBookings.length} />
-                    <div className="flex-1" />
                     <button
                         onClick={fetchData}
-                        className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-navy-dark uppercase tracking-widest transition-colors"
+                        className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-navy-dark uppercase tracking-widest transition-colors ml-auto"
                     >
                         <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-                        Actualizar
+                        <span className="hidden sm:inline">Actualizar</span>
                     </button>
                 </motion.div>
 

@@ -3,7 +3,14 @@
     "allow": [
       "WebFetch(domain:unsplash.com)",
       "WebFetch(domain:images.unsplash.com)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(railway variables set MONGODB_URI=\"mongodb+srv://straicop_db_user:vAANP4wZh28GaMMI@cluster0.vjovxwe.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0\")",
+      "Bash(railway --help)",
+      "Bash(railway service --help)",
+      "Bash(railway run --service 66b01af9-4fca-4502-b024-2a3697ca4623 node scripts/seed-staff.mjs)",
+      "Bash(railway run --service 66b01af9-4fca-4502-b024-2a3697ca4623 node seed-staff.mjs)",
+      "Bash(curl -s https://innovative-possibility-production-b6f0.up.railway.app/api/health)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://innovative-possibility-production-b6f0.up.railway.app/)"
     ]
   }
 }
