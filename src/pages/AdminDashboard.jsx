@@ -72,8 +72,12 @@ export const AdminDashboard = () => {
                 ${sidebarCollapsed ? 'w-[68px]' : 'w-60'}
                 ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
                 <div className="p-4 flex items-center gap-3 border-b border-white/10">
-                    <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors flex-shrink-0">
+                    <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors flex-shrink-0 hidden lg:flex" aria-label="Colapsar menú">
                         <Sailboat size={20} />
+                    </button>
+                    {/* Mobile close button */}
+                    <button onClick={() => setMobileOpen(false)} className="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors flex-shrink-0 lg:hidden" aria-label="Cerrar menú">
+                        <X size={20} />
                     </button>
                     {!sidebarCollapsed && (
                         <div className="min-w-0">
@@ -88,9 +92,9 @@ export const AdminDashboard = () => {
                         <button
                             key={s.id}
                             onClick={() => { setSection(s.id); setMobileOpen(false); }}
-                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all text-sm font-medium ${section === s.id
+                            className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-left transition-all text-sm font-medium ${section === s.id
                                 ? 'bg-white/15 text-white'
-                                : 'text-white/50 hover:text-white hover:bg-white/5'
+                                : 'text-white/60 hover:text-white hover:bg-white/5'
                                 }`}
                             title={sidebarCollapsed ? s.label : undefined}
                         >
