@@ -7,7 +7,7 @@ import {
     Mail, Phone, Building, MapPin, Anchor, Calendar, DollarSign,
     TrendingUp, BarChart2, CheckSquare, XSquare, Hash, Activity,
     Edit2, Save, X, Trash2, Eye, LayoutDashboard, FileText, Search,
-    AlertCircle, ChevronRight, Shield, UserCheck, Sailboat, Menu
+    AlertCircle, ChevronRight, ChevronLeft, Menu
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -72,8 +72,8 @@ export const AdminDashboard = () => {
                 ${sidebarCollapsed ? 'w-[68px]' : 'w-60'}
                 ${mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
                 <div className="p-4 flex items-center gap-3 border-b border-white/10">
-                    <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors flex-shrink-0 hidden lg:flex" aria-label="Colapsar menú">
-                        <Sailboat size={20} />
+                    <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors flex-shrink-0 hidden lg:flex" aria-label={sidebarCollapsed ? 'Expandir menú' : 'Colapsar menú'}>
+                        {sidebarCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
                     </button>
                     {/* Mobile close button */}
                     <button onClick={() => setMobileOpen(false)} className="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors flex-shrink-0 lg:hidden" aria-label="Cerrar menú">
