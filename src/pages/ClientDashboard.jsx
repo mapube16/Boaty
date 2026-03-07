@@ -112,9 +112,9 @@ export const ClientDashboard = () => {
                 throw new Error(data.detail || data.message || 'No se pudo iniciar el pago');
             }
 
-            // Open MercadoPago Checkout Pro in a new tab
-            // (sandbox_init_point is used automatically in TEST mode by MP)
-            window.open(data.sandbox_init_point || data.init_point, '_blank');
+            // Redirect to MercadoPago Checkout Pro
+            // window.open is blocked on mobile after async calls — use location.href instead
+            window.location.href = data.sandbox_init_point || data.init_point;
         } catch (err) {
             console.error('[CLIENT] Error al iniciar pago:', err);
             alert('Error al conectar con la pasarela de pagos.');
