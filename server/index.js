@@ -20,7 +20,7 @@ import paymentsRouter from './routes/payments.js';
 import { requireAuth } from './middleware/auth.js';
 import { addClient } from './sse.js';
 
-dotenv.config();
+dotenv.config({ path: join(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
