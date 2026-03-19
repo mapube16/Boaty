@@ -91,11 +91,11 @@ export function LeadFormPage() {
 
     if (submitted) {
         return (
-            <div className="min-h-screen bg-cream-light flex items-center justify-center px-6">
+            <div className="min-h-screen bg-navy-dark flex items-center justify-center px-6">
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="max-w-xl w-full glass-premium p-16 rounded-[48px] text-center border-orange/10 shadow-premium"
+                    className="max-w-xl w-full bg-white p-16 rounded-[48px] text-center shadow-premium"
                 >
                     <div className="w-24 h-24 bg-orange rounded-[32px] flex items-center justify-center mx-auto mb-10 shadow-premium-orange rotate-3">
                         <CheckCircle className="text-white" size={48} />
@@ -110,7 +110,7 @@ export function LeadFormPage() {
     }
 
     return (
-        <div className="min-h-screen bg-cream-light flex items-center justify-center px-6 py-16">
+        <div className="min-h-screen bg-navy-dark flex items-center justify-center px-6 py-16">
             <div className="w-full max-w-2xl">
                 {/* Header */}
                 <motion.div
@@ -118,11 +118,11 @@ export function LeadFormPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center mb-12"
                 >
-                    <div className="w-16 h-16 bg-navy-dark rounded-[20px] flex items-center justify-center mx-auto mb-6">
+                    <div className="w-16 h-16 bg-orange rounded-[20px] flex items-center justify-center mx-auto mb-6">
                         <Anchor className="text-white" size={28} />
                     </div>
-                    <h1 className="text-5xl font-heading font-black text-navy-dark mb-3">BOATY</h1>
-                    <p className="text-navy-dark/40 text-xs uppercase tracking-[0.4em] font-bold">Registro de Embarcación</p>
+                    <h1 className="text-5xl font-heading font-black text-white mb-3">BOATY</h1>
+                    <p className="text-white/40 text-xs uppercase tracking-[0.4em] font-bold">Registro de Embarcación</p>
                 </motion.div>
 
                 {/* Form Card */}
@@ -130,7 +130,7 @@ export function LeadFormPage() {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1 }}
-                    className="glass-premium p-10 md:p-14 rounded-[48px] shadow-premium"
+                    className="bg-white p-10 md:p-14 rounded-[48px] shadow-premium"
                 >
                     <form onSubmit={handleSubmit} className="space-y-8">
 
