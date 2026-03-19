@@ -17,6 +17,7 @@ import adminRouter from './routes/admin.js';
 import operatorRouter from './routes/operator.js';
 import clientRouter from './routes/client.js';
 import paymentsRouter from './routes/payments.js';
+import leadsRouter from './routes/leads.js';
 import { requireAuth } from './middleware/auth.js';
 import { addClient } from './sse.js';
 
@@ -71,6 +72,7 @@ app.use('/api/', apiLimiter);
 
 // Routes
 app.use('/api/providers', providersRouter);
+app.use('/api/leads', leadsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/operator', operatorRouter);

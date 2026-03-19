@@ -10,6 +10,7 @@ import { ClientDashboard } from './pages/ClientDashboard';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { LeadFormPage } from './pages/LeadFormPage';
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/invite" element={<InvitePage />} />
+                <Route path="/registro" element={<LeadFormPage />} />
                 <Route
                     path="/admin"
                     element={
