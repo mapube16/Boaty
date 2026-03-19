@@ -103,13 +103,11 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected' });
 });
 
-// Serve frontend in production
-if (process.env.NODE_ENV === 'production') {
-    const distPath = join(__dirname, '..', 'dist');
-    if (existsSync(distPath)) {
-        app.use(express.static(distPath));
-        app.get('*', (req, res) => res.sendFile(join(distPath, 'index.html')));
-    }
+// Serve frontend if dist folder exists
+const distPath = join(__dirname, '..', 'dist');
+if (existsSync(distPath)) {
+    app.use(express.static(distPath));
+    app.get('*', (req, res) => res.sendFile(join(distPath, 'index.html')));
 }
 
 // Start HTTP server first so Railway healthcheck can respond immediately
