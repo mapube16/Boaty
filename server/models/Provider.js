@@ -54,6 +54,29 @@ const providerSchema = new mongoose.Schema({
             message: 'La capacidad debe ser un entero',
         },
     },
+    pies: {
+        type: Number,
+        default: null,
+        min: 1,
+    },
+    // Amenidades
+    amenidades: {
+        sonido: { type: Boolean, default: false },
+        nevera: { type: Boolean, default: false },
+        cuartos: { type: Number, default: 0, min: 0 },
+        banos: { type: Number, default: 0, min: 0 },
+    },
+    // Servicio ofrecido
+    tipoServicio: {
+        type: String,
+        enum: ['dia', 'noche', 'ambos'],
+        default: 'dia',
+    },
+    // Si necesita fotografía profesional del equipo BOATY
+    necesitaFotografia: {
+        type: Boolean,
+        default: false,
+    },
     descripcion: {
         type: String,
         trim: true,
@@ -65,7 +88,7 @@ const providerSchema = new mongoose.Schema({
         default: 'pendiente',
     },
 }, {
-    timestamps: true, // adds createdAt and updatedAt automatically
+    timestamps: true,
 });
 
 export const Provider = mongoose.model('Provider', providerSchema);

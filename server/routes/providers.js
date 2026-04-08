@@ -16,6 +16,10 @@ router.post('/', async (req, res) => {
             tipoEmbarcacion,
             cantidadEmbarcaciones,
             capacidadPersonas,
+            pies,
+            amenidades,
+            tipoServicio,
+            necesitaFotografia,
             descripcion,
         } = req.body;
 
@@ -52,6 +56,8 @@ router.post('/', async (req, res) => {
             });
         }
 
+        const piesNumber = pies ? Number(pies) : null;
+
         const provider = new Provider({
             nombre,
             apellido,
@@ -62,6 +68,15 @@ router.post('/', async (req, res) => {
             tipoEmbarcacion,
             cantidadEmbarcaciones: cantidadNumber,
             capacidadPersonas: capacidadNumber,
+            pies: piesNumber,
+            amenidades: amenidades ? {
+                sonido: Boolean(amenidades.sonido),
+                nevera: Boolean(amenidades.nevera),
+                cuartos: amenidades.cuartos ? Number(amenidades.cuartos) : 0,
+                banos: amenidades.banos ? Number(amenidades.banos) : 0,
+            } : undefined,
+            tipoServicio: tipoServicio || 'dia',
+            necesitaFotografia: typeof necesitaFotografia === 'boolean' ? necesitaFotografia : false,
             descripcion,
         });
 
