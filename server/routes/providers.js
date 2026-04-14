@@ -21,6 +21,7 @@ router.post('/', async (req, res) => {
             tipoServicio,
             necesitaFotografia,
             descripcion,
+            fotos,
         } = req.body;
 
         const normalizedEmail = typeof email === 'string' ? email.toLowerCase().trim() : '';
@@ -77,6 +78,7 @@ router.post('/', async (req, res) => {
             } : undefined,
             tipoServicio: tipoServicio || 'dia',
             necesitaFotografia: typeof necesitaFotografia === 'boolean' ? necesitaFotografia : false,
+            fotos: Array.isArray(fotos) ? fotos : [],
             descripcion,
         });
 

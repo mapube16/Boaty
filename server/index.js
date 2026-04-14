@@ -18,6 +18,7 @@ import operatorRouter from './routes/operator.js';
 import clientRouter from './routes/client.js';
 import paymentsRouter from './routes/payments.js';
 import leadsRouter from './routes/leads.js';
+import uploadsRouter from './routes/uploads.js';
 import { requireAuth } from './middleware/auth.js';
 import { addClient } from './sse.js';
 
@@ -78,6 +79,7 @@ app.use('/api/admin', adminRouter);
 app.use('/api/operator', operatorRouter);
 app.use('/api/client', clientRouter);
 app.use('/api/payments', paymentsRouter);
+app.use('/api/uploads', uploadsRouter);
 
 // SSE — real-time event stream (authenticated)
 app.get('/api/events', requireAuth, (req, res) => {

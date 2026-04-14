@@ -77,6 +77,10 @@ const providerSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    fotos: [{
+        url: { type: String, required: true },
+        publicId: { type: String, required: true },
+    }],
     descripcion: {
         type: String,
         trim: true,

@@ -93,6 +93,7 @@ router.post('/login', async (req, res) => {
             user: { id: user._id, email: user.email, role: user.role },
         });
     } catch (error) {
+        console.error('[AUTH] Error login:', error);
         return res.status(500).json({ success: false, message: 'Error interno del servidor.' });
     }
 });

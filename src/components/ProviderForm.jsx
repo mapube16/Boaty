@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, Loader2, Mail, Phone, ChevronRight, AlertCircle, Music, Refrigerator, BedDouble, Bath, Sun, Moon, Sparkles, Camera } from 'lucide-react';
+import { CheckCircle, Loader2, Mail, Phone, ChevronRight, AlertCircle, Music, Refrigerator, BedDouble, Bath, Sun, Moon, Sparkles, Camera, ImagePlus, X } from 'lucide-react';
 
 const boatTypes = [
     'Lancha deportiva',
@@ -43,6 +43,8 @@ export const ProviderForm = () => {
         descripcion: '',
         aceptaTerminos: false,
     });
+    const [fotos, setFotos] = useState([]);        // File objects
+    const [previews, setPreviews] = useState([]);    // preview URLs
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
@@ -103,6 +105,26 @@ export const ProviderForm = () => {
         if (errors.necesitaFotografia) setErrors(prev => ({ ...prev, necesitaFotografia: undefined }));
     };
 
+    const handleFotos = (e) => {
+        const files = Array.from(e.target.files || []);
+        const total = fotos.length + files.length;
+        if (total > 5) {
+            setErrors(prev => ({ ...prev, fotos: 'Máximo 5 fotos permitidas.' }));
+            return;
+        }
+        const newFotos = [...fotos, ...files];
+        setFotos(newFotos);
+        setPreviews(newFotos.map(f => URL.createObjectURL(f)));
+        if (errors.fotos) setErrors(prev => ({ ...prev, fotos: undefined }));
+    };
+
+    const removeFoto = (index) => {
+        URL.revokeObjectURL(previews[index]);
+        const newFotos = fotos.filter((_, i) => i !== index);
+        setFotos(newFotos);
+        setPreviews(newFotos.map(f => URL.createObjectURL(f)));
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -115,6 +137,27 @@ export const ProviderForm = () => {
         setLoading(true);
 
         try {
+            // 1. Upload photos to Cloudinary (if any)
+            let uploadedFotos = [];
+            if (fotos.length > 0) {
+                const formDataUpload = new FormData();
+                fotos.forEach(file => formDataUpload.append('fotos', file));
+
+                const uploadRes = await fetch('/api/uploads', {
+                    method: 'POST',
+                    body: formDataUpload,
+                });
+                const uploadData = await uploadRes.json();
+
+                if (!uploadRes.ok) {
+                    setErrors({ submit: uploadData?.message || 'Error al subir las fotos.' });
+                    setLoading(false);
+                    return;
+                }
+                uploadedFotos = uploadData.fotos;
+            }
+
+            // 2. Register provider with photo URLs
             const response = await fetch('/api/providers', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -137,6 +180,7 @@ export const ProviderForm = () => {
                     },
                     tipoServicio: formData.tipoServicio,
                     necesitaFotografia: formData.necesitaFotografia,
+                    fotos: uploadedFotos,
                     descripcion: formData.descripcion,
                 }),
             });
@@ -475,6 +519,57 @@ export const ProviderForm = () => {
                                     ))}
                                 </div>
                                 {errors.necesitaFotografia && <p role="alert" className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.necesitaFotografia}</p>}
+                            </div>
+
+                            <div className="h-[1px] bg-navy-dark/5 my-10" />
+
+                            {/* ── Sección 6: Fotos de la Embarcación ── */}
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 mb-8">
+                                    <div className="w-8 h-8 rounded-full bg-navy-dark text-white font-heading font-black text-xs flex items-center justify-center">6</div>
+                                    <h3 className="font-heading font-extrabold text-navy-dark uppercase tracking-widest text-sm">Fotos de la Embarcación</h3>
+                                </div>
+
+                                <p className="text-navy-dark/40 text-xs font-medium leading-relaxed">
+                                    Sube hasta 5 fotos de tu embarcación (JPG, PNG o WebP, máx. 5 MB cada una). Este paso es opcional.
+                                </p>
+
+                                {/* Preview grid */}
+                                {previews.length > 0 && (
+                                    <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                                        {previews.map((src, i) => (
+                                            <div key={i} className="relative group aspect-square rounded-2xl overflow-hidden border border-cream">
+                                                <img src={src} alt={`Foto ${i + 1}`} className="w-full h-full object-cover" />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeFoto(i)}
+                                                    className="absolute top-1 right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <X size={12} className="text-white" />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Upload button */}
+                                {fotos.length < 5 && (
+                                    <label className="flex flex-col items-center justify-center gap-3 px-5 py-8 rounded-2xl border-2 border-dashed border-cream hover:border-orange/40 bg-white/30 cursor-pointer transition-all duration-300 group">
+                                        <ImagePlus size={28} className="text-navy-dark/30 group-hover:text-orange transition-colors" />
+                                        <span className="text-navy-dark/40 text-xs font-bold uppercase tracking-widest group-hover:text-navy-dark/60">
+                                            {fotos.length === 0 ? 'Seleccionar fotos' : `Agregar más (${fotos.length}/5)`}
+                                        </span>
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/webp"
+                                            multiple
+                                            onChange={handleFotos}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                )}
+
+                                {errors.fotos && <p role="alert" className="text-red-500 text-[10px] font-bold mt-2 uppercase tracking-wide">{errors.fotos}</p>}
                             </div>
 
                             <div className="h-[1px] bg-navy-dark/5 my-10" />

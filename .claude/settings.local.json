@@ -10,7 +10,9 @@
       "Bash(railway run --service 66b01af9-4fca-4502-b024-2a3697ca4623 node scripts/seed-staff.mjs)",
       "Bash(railway run --service 66b01af9-4fca-4502-b024-2a3697ca4623 node seed-staff.mjs)",
       "Bash(curl -s https://innovative-possibility-production-b6f0.up.railway.app/api/health)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://innovative-possibility-production-b6f0.up.railway.app/)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" https://innovative-possibility-production-b6f0.up.railway.app/)",
+      "Bash(npm run:*)",
+      "Bash(node index.js)"
     ]
   }
 }
