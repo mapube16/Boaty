@@ -32,7 +32,16 @@ app.set('trust proxy', 1);
 // ── Security middleware ────────────────────────────────────────────────────────
 app.use(helmet({
     contentSecurityPolicy: false, // Relaxed for SPA; tighten per-domain in production
+    frameguard: false,            // allow embedding in iframes (X-Frame-Options removed)
 }));
+
+// Allow this app to be embedded in iframes from any origin.
+// To restrict, replace '*' with your parent domain(s), e.g.:
+//   "frame-ancestors 'self' https://tudominio.com"
+app.use((req, res, next) => {
+    res.setHeader('Content-Security-Policy', "frame-ancestors *");
+    next();
+});
 
 // ── CORS — configurable via CORS_ORIGINS env var ───────────────────────────────
 const allowedOrigins = process.env.CORS_ORIGINS
